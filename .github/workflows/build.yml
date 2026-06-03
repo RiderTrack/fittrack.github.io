@@ -57,7 +57,6 @@ jobs:
       - name: Copy and resize app icon
         run: |
           if [ -f "icon.png" ]; then
-            # Generar todos los tamaÃ±os necesarios
             mkdir -p android/app/src/main/res/mipmap-mdpi
             mkdir -p android/app/src/main/res/mipmap-hdpi
             mkdir -p android/app/src/main/res/mipmap-xhdpi
@@ -68,15 +67,14 @@ jobs:
             convert icon.png -resize 96x96   android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
             convert icon.png -resize 144x144 android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
             convert icon.png -resize 192x192 android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-            # Redondo tambiÃ©n
             convert icon.png -resize 48x48   android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
             convert icon.png -resize 72x72   android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
             convert icon.png -resize 96x96   android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
             convert icon.png -resize 144x144 android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
             convert icon.png -resize 192x192 android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-            echo "âœ… Ãconos generados"
+            echo "Iconos generados correctamente"
           else
-            echo "âš ï¸ icon.png no encontrado, usando Ã­cono por defecto"
+            echo "icon.png no encontrado, usando icono por defecto"
           fi
 
       - name: Update AndroidManifest permissions
