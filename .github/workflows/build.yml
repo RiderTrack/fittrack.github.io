@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install imagemagick for icon resizing
+      - name: Install imagemagick
         run: sudo apt-get install -y imagemagick
 
       - name: Prepare www folder
@@ -54,27 +54,24 @@ jobs:
       - name: Sync Capacitor plugins
         run: npx cap sync android
 
-      - name: Copy and resize app icon
+      - name: Replace app icons with custom icon
         run: |
           if [ -f "icon.png" ]; then
-            mkdir -p android/app/src/main/res/mipmap-mdpi
-            mkdir -p android/app/src/main/res/mipmap-hdpi
-            mkdir -p android/app/src/main/res/mipmap-xhdpi
-            mkdir -p android/app/src/main/res/mipmap-xxhdpi
-            mkdir -p android/app/src/main/res/mipmap-xxxhdpi
-            convert icon.png -resize 48x48   android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-            convert icon.png -resize 72x72   android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-            convert icon.png -resize 96x96   android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-            convert icon.png -resize 144x144 android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-            convert icon.png -resize 192x192 android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-            convert icon.png -resize 48x48   android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
-            convert icon.png -resize 72x72   android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-            convert icon.png -resize 96x96   android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
-            convert icon.png -resize 144x144 android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-            convert icon.png -resize 192x192 android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-            echo "Iconos generados correctamente"
-          else
-            echo "icon.png no encontrado, usando icono por defecto"
+            for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+              case $density in
+                mdpi)    size=48  ;;
+                hdpi)    size=72  ;;
+                xhdpi)   size=96  ;;
+                xxhdpi)  size=144 ;;
+                xxxhdpi) size=192 ;;
+              esac
+              dir="android/app/src/main/res/mipmap-${density}"
+              mkdir -p "$dir"
+              convert icon.png -resize ${size}x${size} "${dir}/ic_launcher.png"
+              convert icon.png -resize ${size}x${size} "${dir}/ic_launcher_round.png"
+              convert icon.png -resize ${size}x${size} "${dir}/ic_launcher_foreground.png"
+            done
+            echo "Icons replaced successfully"
           fi
 
       - name: Update AndroidManifest permissions
