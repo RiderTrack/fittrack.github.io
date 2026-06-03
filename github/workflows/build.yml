@@ -54,7 +54,7 @@ jobs:
       - name: Sync Capacitor plugins
         run: npx cap sync android
 
-      - name: Replace app icons with custom icon
+      - name: Replace all app icons
         run: |
           if [ -f "icon.png" ]; then
             for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
@@ -71,7 +71,10 @@ jobs:
               convert icon.png -resize ${size}x${size} "${dir}/ic_launcher_round.png"
               convert icon.png -resize ${size}x${size} "${dir}/ic_launcher_foreground.png"
             done
-            echo "Icons replaced successfully"
+            mkdir -p android/app/src/main/res/mipmap-anydpi-v26
+            printf '<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@android:color/white"/>\n    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>' > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+            cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+            echo "Icons replaced"
           fi
 
       - name: Update AndroidManifest permissions
