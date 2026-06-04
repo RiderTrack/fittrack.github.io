@@ -1,6 +1,6 @@
 {
   "name": "fittrack-app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "FitTrack - Aplicación de Entrenamiento Personal",
   "main": "index.js",
   "scripts": {
