@@ -1,5 +1,5 @@
-{
-  "appId": "com.fittrack.app",
+ {
+  "appId" : " com.fittrack.app",
   "appName": "FitTrack",
   "webDir": ".",
   "server": {
