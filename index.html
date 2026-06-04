@@ -1089,7 +1089,7 @@
   </div>
 </div>
 <script>
-(function(){
+document.addEventListener("DOMContentLoaded", function(){
   var splash=document.getElementById("ft-splash");
   var bar=document.getElementById("ft-splash-bar");
   if(!splash||!bar) return;
@@ -1108,7 +1108,7 @@
     }
   }
   requestAnimationFrame(tick);
-})();
+});
 </script>
 
 
