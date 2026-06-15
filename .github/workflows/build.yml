@@ -89,17 +89,8 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Generate keystore
-        run: |
-          keytool -genkeypair \
-            -keystore debug.keystore \
-            -alias fittrack \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass fittrack123 \
-            -keypass fittrack123 \
-            -dname "CN=FitTrack, OU=Dev, O=FitTrack, L=Lima, S=Lima, C=PE"
+      - name: Restore keystore from Secret
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > fittrack.keystore
 
       - name: Zipalign APK
         run: |
@@ -109,7 +100,13 @@ jobs:
       - name: Sign APK
         run: |
           APKSIGNER=$(find $ANDROID_SDK_ROOT -name "apksigner" | head -1)
-          $APKSIGNER sign --ks debug.keystore --ks-key-alias fittrack --ks-pass pass:fittrack123 --key-pass pass:fittrack123 --out FitTrack-v1.0.apk FitTrack-aligned.apk
+          $APKSIGNER sign \
+            --ks fittrack.keystore \
+            --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+            --ks-pass pass:"${{ secrets.STORE_PASSWORD }}" \
+            --key-pass pass:"${{ secrets.KEY_PASSWORD }}" \
+            --out FitTrack-v1.0.apk \
+            FitTrack-aligned.apk
 
       - name: Upload signed APK
         uses: actions/upload-artifact@v4
