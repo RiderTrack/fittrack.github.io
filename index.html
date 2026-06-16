@@ -34,6 +34,8 @@
                     window.FITTRACK_USER_ID = user.uid;
                     localStorage.setItem('FITTRACK_USER_ID', user.uid);
                     localStorage.setItem('FITTRACK_USER_NAME', user.displayName || 'Campeón');
+                    localStorage.setItem('FITTRACK_USER_EMAIL', user.email || '');
+                    localStorage.setItem('FITTRACK_USER_PHOTO', user.photoURL || '');
                     var nombreEl = document.querySelector('.user-welcome h2');
                     if(nombreEl) nombreEl.textContent = 'Hola ' + (user.displayName ? user.displayName.split(' ')[0] : 'campeón') + ' 👋';
                     // Ocultar login
@@ -1638,14 +1640,22 @@
         <div class="glass-card studio-section" style="margin-bottom:14px;">
             <div class="studio-title">👤 Mi Perfil</div>
             <div style="display:flex;flex-direction:column;gap:10px;">
-                <div>
-                    <label style="font-size:0.72rem;font-weight:700;color:rgb(var(--text-muted-rgb));display:block;margin-bottom:5px;">NOMBRE</label>
-                    <input id="config-nombre" type="text" placeholder="Tu nombre" maxlength="30"
-                        style="width:100%;background:rgba(var(--text-rgb),0.06);border:1px solid rgba(var(--border-rgb),0.15);border-radius:10px;padding:10px 13px;color:rgb(var(--text-rgb));font-family:inherit;font-size:0.88rem;outline:none;">
+                <!-- Info de cuenta Google -->
+                <div id="google-account-info" style="display:flex;align-items:center;gap:12px;background:rgba(var(--text-rgb),0.04);border:1px solid rgba(var(--border-rgb),0.1);border-radius:10px;padding:10px 13px;">
+                    <div id="google-account-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;">?</div>
+                    <div style="flex:1;min-width:0;">
+                        <div id="google-account-name" style="font-size:0.85rem;font-weight:700;color:rgb(var(--text-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+                        <div id="google-account-email" style="font-size:0.7rem;color:rgb(var(--text-muted-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+                    </div>
                 </div>
-                <button onclick="guardarPerfil()" style="background:rgba(var(--primary-rgb),0.15);border:1px solid rgba(var(--primary-rgb),0.3);color:rgb(var(--primary-rgb));border-radius:10px;padding:9px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">
-                    💾 Guardar nombre
-                </button>
+                <div style="display:flex;gap:8px;">
+                    <button onclick="cambiarCuenta()" style="flex:1;background:rgba(var(--primary-rgb),0.15);border:1px solid rgba(var(--primary-rgb),0.3);color:rgb(var(--primary-rgb));border-radius:10px;padding:9px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                        🔄 Cambiar cuenta
+                    </button>
+                    <button onclick="cerrarSesion()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#f87171;border-radius:10px;padding:9px 12px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                        🚪
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -5670,9 +5680,61 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         if(nombreGuardado) actualizarNombreUI(nombreGuardado);
         // Actualizar UI de config cuando se abre esa sección
         document.querySelectorAll('[onclick*="view-config"]').forEach(function(btn){
-            btn.addEventListener('click', function(){ setTimeout(actualizarConfigUI, 100); });
+            btn.addEventListener('click', function(){ setTimeout(function(){ actualizarConfigUI(); actualizarInfoCuenta(); }, 100); });
         });
     });
+
+    function cambiarCuenta(){
+        if(typeof Capacitor === 'undefined' || !Capacitor.Plugins || !Capacitor.Plugins.GoogleAuth){
+            showToast('⚠️ No disponible');
+            return;
+        }
+        // Limpiar sesión y mostrar selector de cuentas
+        if(fbAuth) fbAuth.signOut().then(function(){
+            localStorage.removeItem('FITTRACK_USER_ID');
+            localStorage.removeItem('FITTRACK_USER_NAME');
+            localStorage.removeItem('FITTRACK_ONBOARDING_OK');
+            Capacitor.Plugins.GoogleAuth.signOut().then(function(){
+                var loginScreen = document.getElementById('login-screen');
+                if(loginScreen) loginScreen.style.display = 'flex';
+            }).catch(function(){
+                var loginScreen = document.getElementById('login-screen');
+                if(loginScreen) loginScreen.style.display = 'flex';
+            });
+        });
+    }
+
+    function cerrarSesion(){
+        if(!confirm('¿Cerrar sesión?')) return;
+        if(fbAuth) fbAuth.signOut().then(function(){
+            localStorage.removeItem('FITTRACK_USER_ID');
+            localStorage.removeItem('FITTRACK_USER_NAME');
+            localStorage.removeItem('FITTRACK_ONBOARDING_OK');
+            if(typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.GoogleAuth){
+                Capacitor.Plugins.GoogleAuth.signOut().catch(function(){});
+            }
+            window.location.reload();
+        });
+    }
+
+    function actualizarInfoCuenta(){
+        // Actualizar avatar, nombre y email en ajustes
+        var nombre = localStorage.getItem('FITTRACK_USER_NAME') || '—';
+        var email  = localStorage.getItem('FITTRACK_USER_EMAIL') || '—';
+        var foto   = localStorage.getItem('FITTRACK_USER_PHOTO') || '';
+        var avatarEl = document.getElementById('google-account-avatar');
+        var nombreEl = document.getElementById('google-account-name');
+        var emailEl  = document.getElementById('google-account-email');
+        if(avatarEl){
+            if(foto){
+                avatarEl.innerHTML = '<img src="'+foto+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">';
+            } else {
+                avatarEl.textContent = nombre.charAt(0).toUpperCase();
+            }
+        }
+        if(nombreEl) nombreEl.textContent = nombre;
+        if(emailEl)  emailEl.textContent  = email;
+    }
 
     function guardarRutinaIA(msgId){} // legacy — ya no se usa
     </script>
