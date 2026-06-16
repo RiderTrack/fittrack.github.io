@@ -5379,6 +5379,277 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         💬
     </button>
 
+    <!-- ══ BOTÓN FLOTANTE SPOTIFY ══ -->
+    <button onclick="toggleSpotify()" id="spotify-fab" style="position:fixed;bottom:152px;right:16px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1DB954,#1aa34a);border:none;color:#fff;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(29,185,84,0.4);display:flex;align-items:center;justify-content:center;" title="Spotify">
+        🎵
+    </button>
+
+    <!-- ══ MODAL SPOTIFY ══ -->
+    <div id="spotify-modal" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;padding:0 0 70px;">
+        <div style="background:rgb(var(--bg-rgb));border-radius:24px 24px 0 0;border:1px solid rgba(29,185,84,0.2);border-bottom:none;overflow:hidden;">
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid rgba(var(--border-rgb),0.15);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                    <div>
+                        <div style="font-weight:800;font-size:0.95rem;color:rgb(var(--text-rgb));">Spotify</div>
+                        <div id="spotify-status-text" style="font-size:0.65rem;color:#1DB954;font-weight:700;">Conecta tu cuenta</div>
+                    </div>
+                </div>
+                <button onclick="toggleSpotify()" style="background:rgba(var(--text-rgb),0.08);border:none;color:rgb(var(--text-muted-rgb));border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;">✕</button>
+            </div>
+
+            <!-- Login view -->
+            <div id="spotify-login-view" style="padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+                <div style="font-size:2.5rem;">🎵</div>
+                <p style="color:rgb(var(--text-muted-rgb));font-size:0.82rem;text-align:center;">Conecta tu cuenta Spotify Premium para escuchar música mientras entrenas</p>
+                <button onclick="spotifyLogin()" style="background:#1DB954;color:#000;border:none;border-radius:50px;padding:13px 32px;font-size:0.9rem;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#000"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                    Conectar con Spotify
+                </button>
+            </div>
+
+            <!-- Player view (oculto hasta login) -->
+            <div id="spotify-player-view" style="display:none;padding:16px;">
+                <!-- Canción actual -->
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                    <img id="spotify-album-art" src="" alt="" style="width:56px;height:56px;border-radius:8px;object-fit:cover;background:rgba(var(--text-rgb),0.1);">
+                    <div style="flex:1;min-width:0;">
+                        <div id="spotify-track-name" style="font-weight:800;font-size:0.9rem;color:rgb(var(--text-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+                        <div id="spotify-artist-name" style="font-size:0.72rem;color:rgb(var(--text-muted-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+                    </div>
+                    <div id="spotify-liked" style="font-size:1.2rem;cursor:pointer;" onclick="spotifyToggleLike()">🤍</div>
+                </div>
+                <!-- Barra de progreso -->
+                <div style="height:3px;background:rgba(var(--text-rgb),0.1);border-radius:2px;margin-bottom:14px;cursor:pointer;" onclick="spotifySeek(event)">
+                    <div id="spotify-progress-bar" style="height:100%;background:#1DB954;border-radius:2px;width:0%;transition:width 0.5s linear;"></div>
+                </div>
+                <!-- Controles -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <button onclick="spotifyPrev()" style="background:none;border:none;color:rgb(var(--text-muted-rgb));font-size:1.4rem;cursor:pointer;">⏮</button>
+                    <button id="spotify-play-btn" onclick="spotifyPlayPause()" style="background:#1DB954;border:none;color:#000;border-radius:50%;width:48px;height:48px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">▶</button>
+                    <button onclick="spotifyNext()" style="background:none;border:none;color:rgb(var(--text-muted-rgb));font-size:1.4rem;cursor:pointer;">⏭</button>
+                    <button onclick="spotifyLogout()" style="background:none;border:none;color:rgb(var(--text-muted-rgb));font-size:0.7rem;cursor:pointer;font-family:inherit;">Salir</button>
+                </div>
+                <!-- Volumen -->
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:0.8rem;">🔈</span>
+                    <input type="range" id="spotify-volume" min="0" max="100" value="70" oninput="spotifyVolume(this.value)"
+                        style="flex:1;accent-color:#1DB954;height:3px;">
+                    <span style="font-size:0.8rem;">🔊</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ══ SPOTIFY CONFIG ══
+    var SPOTIFY_CLIENT_ID = '9542b79ff46f44aa9ce31a7450497af6';
+    var SPOTIFY_REDIRECT  = 'https://ridertrack.github.io/fittrack.github.io/callback.html';
+    var SPOTIFY_SCOPES    = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state user-library-read user-library-modify';
+    var spotifyPlayer     = null;
+    var spotifyDeviceId   = null;
+    var spotifyAccessToken= null;
+
+    // ── PKCE helpers ──
+    function generateCodeVerifier(){
+        var array = new Uint8Array(56);
+        crypto.getRandomValues(array);
+        return btoa(String.fromCharCode.apply(null, array)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    }
+    function generateCodeChallenge(verifier){
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
+        .then(function(buf){
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(buf)))
+                .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+        });
+    }
+
+    // ── Login ──
+    function spotifyLogin(){
+        var verifier = generateCodeVerifier();
+        localStorage.setItem('SPOTIFY_VERIFIER', verifier);
+        generateCodeChallenge(verifier).then(function(challenge){
+            var url = 'https://accounts.spotify.com/authorize' +
+                '?client_id=' + SPOTIFY_CLIENT_ID +
+                '&response_type=code' +
+                '&redirect_uri=' + encodeURIComponent(SPOTIFY_REDIRECT) +
+                '&scope=' + encodeURIComponent(SPOTIFY_SCOPES) +
+                '&code_challenge_method=S256' +
+                '&code_challenge=' + challenge;
+            window.location.href = url;
+        });
+    }
+
+    // ── Intercambiar code por token ──
+    function spotifyExchangeCode(code){
+        var verifier = localStorage.getItem('SPOTIFY_VERIFIER');
+        var body = new URLSearchParams({
+            client_id:     SPOTIFY_CLIENT_ID,
+            grant_type:    'authorization_code',
+            code:          code,
+            redirect_uri:  SPOTIFY_REDIRECT,
+            code_verifier: verifier
+        });
+        fetch('https://accounts.spotify.com/api/token', {
+            method:'POST',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body: body.toString()
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if(data.access_token){
+                localStorage.setItem('SPOTIFY_TOKEN', data.access_token);
+                localStorage.setItem('SPOTIFY_TOKEN_TIME', Date.now().toString());
+                if(data.refresh_token) localStorage.setItem('SPOTIFY_REFRESH', data.refresh_token);
+                localStorage.removeItem('SPOTIFY_VERIFIER');
+                spotifyAccessToken = data.access_token;
+                // Limpiar URL del callback
+                window.history.replaceState(null, null, window.location.pathname);
+                spotifyIniciarSDK(data.access_token);
+                // Abrir modal automáticamente
+                setTimeout(function(){
+                    var modal = document.getElementById('spotify-modal');
+                    if(modal) modal.style.display = 'block';
+                }, 1500);
+            }
+        })
+        .catch(function(e){ console.warn('Spotify token error:', e); });
+    }
+
+    // ── Verificar callback al cargar ──
+    document.addEventListener('DOMContentLoaded', function(){
+        // Verificar si viene de callback de Spotify
+        var params = new URLSearchParams(window.location.search);
+        var spotifyOk = params.get('spotify');
+        if(spotifyOk === 'ok'){
+            var code = localStorage.getItem('SPOTIFY_CODE');
+            var codeTime = parseInt(localStorage.getItem('SPOTIFY_CODE_TIME') || '0');
+            // Code válido por 5 minutos
+            if(code && (Date.now() - codeTime) < 300000){
+                localStorage.removeItem('SPOTIFY_CODE');
+                localStorage.removeItem('SPOTIFY_CODE_TIME');
+                // Limpiar URL
+                window.history.replaceState(null, null, window.location.pathname);
+                spotifyExchangeCode(code);
+                return;
+            }
+        }
+        // Limpiar URL
+        if(params.has('spotify')) window.history.replaceState(null, null, window.location.pathname);
+        // Verificar token guardado
+        var savedToken = localStorage.getItem('SPOTIFY_TOKEN');
+        var tokenTime  = parseInt(localStorage.getItem('SPOTIFY_TOKEN_TIME') || '0');
+        if(savedToken && (Date.now() - tokenTime) < 3500000){
+            spotifyAccessToken = savedToken;
+            spotifyIniciarSDK(savedToken);
+        }
+    });
+
+    function spotifyIniciarSDK(token){
+        if(window.Spotify){ spotifyCrearPlayer(token); return; }
+        var script = document.createElement('script');
+        script.src = 'https://sdk.scdn.co/spotify-player.js';
+        document.head.appendChild(script);
+        window.onSpotifyWebPlaybackSDKReady = function(){ spotifyCrearPlayer(token); };
+    }
+
+    function spotifyCrearPlayer(token){
+        spotifyPlayer = new Spotify.Player({
+            name: 'FitTrack Player',
+            getOAuthToken: function(cb){ cb(token); },
+            volume: 0.7
+        });
+        spotifyPlayer.addListener('ready', function(data){
+            spotifyDeviceId = data.device_id;
+            spotifyMostrarPlayer();
+            spotifyTransferirPlayback(data.device_id);
+        });
+        spotifyPlayer.addListener('player_state_changed', function(state){
+            if(!state) return;
+            var track = state.track_window.current_track;
+            if(track){
+                document.getElementById('spotify-track-name').textContent = track.name;
+                document.getElementById('spotify-artist-name').textContent = track.artists.map(function(a){ return a.name; }).join(', ');
+                var img = track.album.images[0];
+                if(img) document.getElementById('spotify-album-art').src = img.url;
+            }
+            var playing = !state.paused;
+            document.getElementById('spotify-play-btn').textContent = playing ? '⏸' : '▶';
+            var pct = state.duration ? (state.position / state.duration * 100) : 0;
+            document.getElementById('spotify-progress-bar').style.width = pct + '%';
+        });
+        spotifyPlayer.connect();
+    }
+
+    function spotifyTransferirPlayback(deviceId){
+        if(!spotifyAccessToken || !deviceId) return;
+        fetch('https://api.spotify.com/v1/me/player', {
+            method:'PUT',
+            headers:{'Authorization':'Bearer '+spotifyAccessToken,'Content-Type':'application/json'},
+            body: JSON.stringify({device_ids:[deviceId], play:false})
+        });
+    }
+
+    function spotifyMostrarPlayer(){
+        document.getElementById('spotify-login-view').style.display = 'none';
+        document.getElementById('spotify-player-view').style.display = 'block';
+        document.getElementById('spotify-status-text').textContent = 'Conectado ✅';
+        spotifyObtenerCancionActual();
+    }
+
+    function spotifyObtenerCancionActual(){
+        if(!spotifyAccessToken) return;
+        fetch('https://api.spotify.com/v1/me/player/currently-playing',{
+            headers:{'Authorization':'Bearer '+spotifyAccessToken}
+        }).then(function(r){ if(r.status===200) return r.json(); })
+        .then(function(data){
+            if(data && data.item){
+                document.getElementById('spotify-track-name').textContent = data.item.name;
+                document.getElementById('spotify-artist-name').textContent = data.item.artists.map(function(a){ return a.name; }).join(', ');
+                var img = data.item.album.images[0];
+                if(img) document.getElementById('spotify-album-art').src = img.url;
+                var pct = data.item.duration_ms ? (data.progress_ms / data.item.duration_ms * 100) : 0;
+                document.getElementById('spotify-progress-bar').style.width = pct + '%';
+                document.getElementById('spotify-play-btn').textContent = data.is_playing ? '⏸' : '▶';
+            }
+        }).catch(function(){});
+    }
+
+    function spotifyPlayPause(){ if(spotifyPlayer) spotifyPlayer.togglePlay(); }
+    function spotifyNext(){ if(spotifyPlayer) spotifyPlayer.nextTrack(); }
+    function spotifyPrev(){ if(spotifyPlayer) spotifyPlayer.previousTrack(); }
+    function spotifyVolume(val){ if(spotifyPlayer) spotifyPlayer.setVolume(val/100); }
+    function spotifyToggleLike(){ showToast('❤️ Función próximamente'); }
+
+    function spotifySeek(e){
+        if(!spotifyPlayer) return;
+        var pct = e.offsetX / e.currentTarget.offsetWidth;
+        spotifyPlayer.getCurrentState().then(function(state){
+            if(state) spotifyPlayer.seek(state.duration * pct);
+        });
+    }
+
+    function spotifyLogout(){
+        localStorage.removeItem('SPOTIFY_TOKEN');
+        localStorage.removeItem('SPOTIFY_TOKEN_TIME');
+        localStorage.removeItem('SPOTIFY_VERIFIER');
+        spotifyAccessToken = null;
+        if(spotifyPlayer){ spotifyPlayer.disconnect(); spotifyPlayer = null; }
+        document.getElementById('spotify-login-view').style.display = 'flex';
+        document.getElementById('spotify-player-view').style.display = 'none';
+        document.getElementById('spotify-status-text').textContent = 'Conecta tu cuenta';
+    }
+
+    function toggleSpotify(){
+        var modal = document.getElementById('spotify-modal');
+        if(!modal) return;
+        var abierto = modal.style.display === 'block';
+        modal.style.display = abierto ? 'none' : 'block';
+        if(!abierto && spotifyAccessToken) spotifyObtenerCancionActual();
+    }
+    </script>
+
     <!-- ══ MODAL FITBOT IA ══ -->
     <div id="fitbot-ia-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);align-items:flex-end;justify-content:center;">
         <div style="background:rgb(var(--bg-rgb));border-radius:24px 24px 0 0;width:100%;max-width:430px;display:flex;flex-direction:column;height:88vh;border:1px solid rgba(var(--primary-rgb),0.2);border-bottom:none;">

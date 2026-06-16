@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitTrack · Spotify</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0d0d1a; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:'Segoe UI',sans-serif; color:#fff; }
+  .logo { font-size:3rem; margin-bottom:16px; }
+  h2 { font-size:1.1rem; font-weight:800; color:#1DB954; margin-bottom:8px; }
+  p { font-size:0.8rem; color:#6b7280; }
+  .spinner { width:32px; height:32px; border:3px solid rgba(29,185,84,0.2); border-top-color:#1DB954; border-radius:50%; animation:spin 0.8s linear infinite; margin:20px auto; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="logo">🎵</div>
+<h2>Conectando Spotify...</h2>
+<div class="spinner"></div>
+<p>Regresando a FitTrack</p>
+
+<script>
+(function(){
+    var params = new URLSearchParams(window.location.search);
+    var code  = params.get('code');
+    var error = params.get('error');
+
+    if(error){
+        document.querySelector('h2').textContent = 'Conexión cancelada';
+        document.querySelector('h2').style.color = '#f87171';
+        document.querySelector('.spinner').style.display = 'none';
+        setTimeout(function(){ window.location.href = 'index.html'; }, 1500);
+        return;
+    }
+
+    if(code){
+        // Guardar el code temporalmente
+        localStorage.setItem('SPOTIFY_CODE', code);
+        localStorage.setItem('SPOTIFY_CODE_TIME', Date.now().toString());
+        document.querySelector('h2').textContent = '¡Conectado! ✅';
+        // Redirigir a la app
+        setTimeout(function(){
+            window.location.href = 'index.html?spotify=ok';
+        }, 800);
+    } else {
+        window.location.href = 'index.html';
+    }
+})();
+</script>
+</body>
+</html>
