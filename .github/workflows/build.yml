@@ -51,6 +51,46 @@ jobs:
       - name: Copy web assets to Android
         run: npx cap copy android
 
+      - name: Copy google-services.json
+        run: |
+          if [ -f "google-services.json" ]; then
+            cp google-services.json android/app/google-services.json
+            echo "✅ google-services.json copiado"
+          else
+            echo "⚠️ No se encontró google-services.json"
+          fi
+
+      - name: Register GoogleAuth plugin in Android
+        run: |
+          # Agregar el plugin al build.gradle de la app
+          BUILD_GRADLE="android/app/build.gradle"
+          if ! grep -q "capacitor-google-auth" "$BUILD_GRADLE"; then
+            sed -i '/dependencies {/a\    implementation project(":capacitor-google-auth")' "$BUILD_GRADLE"
+          fi
+          # Agregar el módulo al settings.gradle
+          SETTINGS="android/settings.gradle"
+          if ! grep -q "capacitor-google-auth" "$SETTINGS"; then
+            echo "include ':capacitor-google-auth'" >> "$SETTINGS"
+            echo "project(':capacitor-google-auth').projectDir = new File('../node_modules/@codetrix-studio/capacitor-google-auth/android')" >> "$SETTINGS"
+          fi
+          # Agregar plugin a MainActivity
+          MAIN="android/app/src/main/java/com/fittrack/app/MainActivity.java"
+          if [ -f "$MAIN" ]; then
+            sed -i '/import com.getcapacitor.BridgeActivity;/a import com.codetrixstudio.capacitor.GoogleAuth.GoogleAuth;' "$MAIN"
+            sed -i '/super.onCreate/a\        registerPlugin(GoogleAuth.class);' "$MAIN"
+          fi
+
+      - name: Apply google-services plugin to build.gradle
+        run: |
+          BUILD_GRADLE="android/app/build.gradle"
+          if ! grep -q "google-services" "$BUILD_GRADLE"; then
+            sed -i "1s/^/apply plugin: 'com.google.gms.google-services'\n/" "$BUILD_GRADLE"
+          fi
+          ROOT_GRADLE="android/build.gradle"
+          if ! grep -q "google-services" "$ROOT_GRADLE"; then
+            sed -i "/dependencies {/a\        classpath 'com.google.gms:google-services:4.4.0'" "$ROOT_GRADLE"
+          fi
+
       - name: Sync Capacitor plugins
         run: npx cap sync android
 
