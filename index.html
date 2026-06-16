@@ -32,7 +32,7 @@
         window.loginConGoogle = async function() {
             try {
                 // Usar el plugin nativo de Capacitor GoogleAuth
-                const { GoogleAuth } = await import('https://esm.sh/@codetrix-studio/capacitor-google-auth@3.4.0');
+                const { GoogleAuth } = await import('https://esm.sh/@codetrix-studio/capacitor-google-auth@3.3.0');
                 await GoogleAuth.initialize({
                     clientId: '202098578518-0b5e3vcnv4ark4955k3ek5gjl9eeoct8.apps.googleusercontent.com',
                     scopes: ['profile', 'email'],
