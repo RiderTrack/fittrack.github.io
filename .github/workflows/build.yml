@@ -18,10 +18,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Setup Java 17
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Setup Android SDK
@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p www
           cp index.html www/index.html
-          find . -maxdepth 1 \( -name "*.png" -o -name "*.jpg" -o -name "*.webp" -o -name "*.svg" \) ! -path "./.git/*" -exec cp {} www/ \; 2>/dev/null || true
+          find . -maxdepth 1 \( -name "*.png" -o -name "*.jpg" -o -name "*.webp" -o -name "*.svg" \) ! -path "./.git/*" ! -name "icon-*" -exec cp {} www/ \; 2>/dev/null || true
 
       - name: Initialize Capacitor
         run: npx cap init FitTrack com.fittrack.app --web-dir www
@@ -51,15 +51,22 @@ jobs:
       - name: Copy web assets to Android
         run: npx cap copy android
 
-      - name: Copy google-services.json
-        run: |
-          if [ -f "google-services.json" ]; then
-            cp google-services.json android/app/google-services.json
-            echo "✅ google-services.json copiado"
-          fi
-
       - name: Sync Capacitor plugins
         run: npx cap sync android
+
+      - name: Copy google-services.json
+        run: cp google-services.json android/app/google-services.json
+
+      - name: Configure GoogleAuth plugin
+        run: |
+          mkdir -p android/app/src/main/res/values
+          echo '<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">FitTrack</string><string name="title_activity_main">FitTrack</string><string name="package_name">com.fittrack.app</string><string name="custom_url_scheme">com.fittrack.app</string><string name="server_client_id">202098578518-0b5e3vcnv4ark4955k3ek5gjl9eeoct8.apps.googleusercontent.com</string></resources>' > android/app/src/main/res/values/strings.xml
+          echo "✅ strings.xml creado"
+
+      - name: Add Google Auth dependency to app build.gradle
+        run: |
+          GRADLE="android/app/build.gradle"
+          sed -i '/dependencies {/a\    implementation "com.google.android.gms:play-services-auth:20.7.0"' "$GRADLE"
 
       - name: Replace all app icons
         run: |
@@ -79,7 +86,7 @@ jobs:
               convert icon.png -resize ${size}x${size} "${dir}/ic_launcher_foreground.png"
             done
             mkdir -p android/app/src/main/res/mipmap-anydpi-v26
-            printf '<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@android:color/white"/>\n    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>' > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+            echo '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@android:color/white"/><foreground android:drawable="@mipmap/ic_launcher_foreground"/></adaptive-icon>' > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
             cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
             echo "Icons replaced"
           fi
@@ -87,7 +94,7 @@ jobs:
       - name: Update AndroidManifest permissions
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n    <application|' "$MANIFEST"
+          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />\n    <application|' "$MANIFEST"
 
       - name: Set Gradle permissions
         run: chmod +x android/gradlew
@@ -96,8 +103,38 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Restore keystore from Secret
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > fittrack.keystore
+      # ── KEYSTORE PERSISTENTE ──────────────────────────────────
+      # Usa el keystore guardado en GitHub Secrets.
+      # Si no existe todavía, lo genera y muestra el base64
+      # para que lo guardes como secret KEYSTORE_BASE64.
+      - name: Restore or generate keystore
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "✅ Usando keystore guardado en Secrets"
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > fittrack.keystore
+          else
+            echo "⚠️ No hay KEYSTORE_BASE64 — generando nuevo keystore"
+            keytool -genkeypair \
+              -keystore fittrack.keystore \
+              -alias fittrack \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass fittrack2024 \
+              -keypass fittrack2024 \
+              -dname "CN=FitTrack, OU=Dev, O=FitTrack, L=Lima, S=Lima, C=PE"
+            echo ""
+            echo "══════════════════════════════════════════════"
+            echo "COPIA ESTE BASE64 Y GUARDALO EN GITHUB SECRETS"
+            echo "Nombre del secret: KEYSTORE_BASE64"
+            echo "══════════════════════════════════════════════"
+            base64 -w 0 fittrack.keystore
+            echo ""
+            echo "══════════════════════════════════════════════"
+          fi
+
+      - name: Show SHA-1
+        run: keytool -list -v -keystore fittrack.keystore -alias fittrack -storepass fittrack2024 | grep "SHA1:"
 
       - name: Zipalign APK
         run: |
@@ -109,7 +146,7 @@ jobs:
           APKSIGNER=$(find $ANDROID_SDK_ROOT -name "apksigner" | head -1)
           $APKSIGNER sign \
             --ks fittrack.keystore \
-            --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+            --ks-key-alias fittrack \
             --ks-pass pass:"${{ secrets.STORE_PASSWORD }}" \
             --key-pass pass:"${{ secrets.KEY_PASSWORD }}" \
             --out FitTrack-v1.0.apk \
