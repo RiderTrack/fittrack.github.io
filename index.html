@@ -9,140 +9,125 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-        import { getAuth, GoogleAuthProvider, signInWithCredential, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    <!-- Firebase SDK (carga dinámica igual que RiderTrack) -->
+    <script>
+    (function(){
+        var _s1 = document.createElement('script');
+        _s1.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+        var _s2 = document.createElement('script');
+        _s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js';
+        var _s3 = document.createElement('script');
+        _s3.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js';
+        _s3.onload = function(){ setTimeout(initFirebase, 300); };
+        _s3.onerror = function(){ console.warn('Sin Firebase'); };
+        _s1.onload = function(){ document.head.appendChild(_s2); };
+        _s2.onload = function(){ document.head.appendChild(_s3); };
+        document.head.appendChild(_s1);
+    })();
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyArpeh_5hQqUIUnE19eQ-ClVeMnqhC0Zjs",
-            authDomain: "fittrack-e06be.firebaseapp.com",
-            projectId: "fittrack-e06be",
-            storageBucket: "fittrack-e06be.firebasestorage.app",
-            messagingSenderId: "202098578518",
-            appId: "1:202098578518:web:478894000ed30b9db017f7"
-        };
+    function initFirebase(){
+        try {
+            var firebaseConfig = {
+                apiKey: "AIzaSyArpeh_5hQqUIUnE19eQ-ClVeMnqhC0Zjs",
+                authDomain: "fittrack-e06be.firebaseapp.com",
+                projectId: "fittrack-e06be",
+                storageBucket: "fittrack-e06be.firebasestorage.app",
+                messagingSenderId: "202098578518",
+                appId: "1:202098578518:web:478894000ed30b9db017f7"
+            };
+            if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
+            var db = firebase.firestore();
 
-        const app  = initializeApp(firebaseConfig);
-        const db   = getFirestore(app);
-        const auth = getAuth(app);
-
-        // ── Google Sign-In via Google Identity Services (funciona en Capacitor WebView) ──
-        window.loginConGoogle = async function() {
-            try {
-                // Cargar Google Identity Services
-                await new Promise((resolve, reject) => {
-                    if (window.google && window.google.accounts) { resolve(); return; }
-                    var script = document.createElement('script');
-                    script.src = 'https://accounts.google.com/gsi/client';
-                    script.onload = resolve;
-                    script.onerror = reject;
-                    document.head.appendChild(script);
-                });
-
-                window.google.accounts.id.initialize({
-                    client_id: '202098578518-0b5e3vcnv4ark4955k3ek5gjl9eeoct8.apps.googleusercontent.com',
-                    callback: async function(response) {
-                        try {
-                            // response.credential es el ID token de Google
-                            const credential = GoogleAuthProvider.credential(response.credential);
-                            const result = await signInWithCredential(auth, credential);
-                            console.log('✅ Login Google OK:', result.user.email);
-                        } catch(e) {
-                            console.warn('Firebase credential error:', e.message);
-                            window.showToast && window.showToast('⚠️ Error al autenticar: ' + e.message);
-                        }
-                    },
-                    use_fedcm_for_prompt: true
-                });
-
-                window.google.accounts.id.prompt((notification) => {
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        // Fallback: mostrar One Tap en popup
-                        window.google.accounts.id.renderButton(
-                            document.getElementById('google-btn-container'),
-                            { theme: 'outline', size: 'large', width: 300 }
-                        );
-                    }
-                });
-
-            } catch(e) {
-                console.warn('Google login error:', e.message);
-                window.showToast && window.showToast('⚠️ Error al iniciar sesión con Google');
-            }
-        };
-
-        window.logoutGoogle = async function() {
-            try {
-                await signOut(auth);
-                localStorage.removeItem('FITTRACK_USER_ID');
-                localStorage.removeItem('FITTRACK_USER_NAME');
-                localStorage.removeItem('FITTRACK_USER_EMAIL');
-                localStorage.removeItem('FITTRACK_USER_PHOTO');
-                window.location.reload();
-            } catch(e) {
-                console.warn('Logout error:', e.message);
-            }
-        };
-
-        // ── Escuchar cambios de sesión ──
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Usuario logueado — guardar en localStorage
-                localStorage.setItem('FITTRACK_USER_ID', user.uid);
-                localStorage.setItem('FITTRACK_USER_NAME', user.displayName || 'Usuario');
-                localStorage.setItem('FITTRACK_USER_EMAIL', user.email || '');
-                localStorage.setItem('FITTRACK_USER_PHOTO', user.photoURL || '');
-                window.FITTRACK_USER_ID = user.uid;
-                console.log('✅ Usuario autenticado:', user.email);
-                // Actualizar UI del header
-                var nombreEl = document.querySelector('.user-welcome h2');
-                if (nombreEl) nombreEl.textContent = 'Hola ' + (user.displayName ? user.displayName.split(' ')[0] : 'campeón') + ' 👋';
-                // Ocultar pantalla de login si está visible
-                var loginScreen = document.getElementById('login-screen');
-                if (loginScreen) loginScreen.style.display = 'none';
-            } else {
-                // No logueado
-                window.FITTRACK_USER_ID = localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
-                // Mostrar pantalla de login si el onboarding ya fue completado
-                var onboardingOk = localStorage.getItem('FITTRACK_ONBOARDING_OK');
-                if (onboardingOk) {
+            // ── Auth state ──
+            firebase.auth().onAuthStateChanged(function(user){
+                if(user){
+                    localStorage.setItem('FITTRACK_USER_ID', user.uid);
+                    localStorage.setItem('FITTRACK_USER_NAME', user.displayName || 'Campeón');
+                    window.FITTRACK_USER_ID = user.uid;
+                    var nombreEl = document.querySelector('.user-welcome h2');
+                    if(nombreEl) nombreEl.textContent = 'Hola ' + (user.displayName ? user.displayName.split(' ')[0] : 'campeón') + ' 👋';
                     var loginScreen = document.getElementById('login-screen');
-                    if (loginScreen) loginScreen.style.display = 'flex';
+                    if(loginScreen) loginScreen.style.display = 'none';
+                } else {
+                    window.FITTRACK_USER_ID = localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
+                    var onboardingOk = localStorage.getItem('FITTRACK_ONBOARDING_OK');
+                    if(onboardingOk){
+                        var loginScreen = document.getElementById('login-screen');
+                        if(loginScreen) loginScreen.style.display = 'flex';
+                    }
                 }
-            }
-        });
+            });
 
-        // ── Firestore con USER_ID dinámico ──
-        window.fbSave = async (data) => {
-            try {
+            // ── Firestore ──
+            window.fbSave = function(data){
                 var uid = window.FITTRACK_USER_ID || localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
-                await setDoc(doc(db, 'usuarios', uid), {
+                db.collection('usuarios').doc(uid).set({
                     state: JSON.stringify(data),
                     updatedAt: new Date().toISOString()
-                });
-            } catch(e) {
-                console.warn('Firebase save error:', e.message);
-            }
-        };
+                }).catch(function(e){ console.warn('Firebase save error:', e.message); });
+            };
 
-        window.fbLoad = async () => {
-            try {
+            window.fbLoad = function(){
                 var uid = window.FITTRACK_USER_ID || localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
-                const snap = await getDoc(doc(db, 'usuarios', uid));
-                if (snap.exists()) {
-                    return JSON.parse(snap.data().state);
-                }
-            } catch(e) {
-                console.warn('Firebase load error:', e.message);
-            }
-            return null;
+                return db.collection('usuarios').doc(uid).get().then(function(snap){
+                    if(snap.exists){ return JSON.parse(snap.data().state); }
+                    return null;
+                }).catch(function(){ return null; });
+            };
+
+            window.logoutGoogle = function(){
+                firebase.auth().signOut().then(function(){
+                    localStorage.removeItem('FITTRACK_USER_ID');
+                    localStorage.removeItem('FITTRACK_USER_NAME');
+                    window.location.reload();
+                });
+            };
+
+            window.firebaseReady = true;
+            console.log('✅ Firebase compat listo');
+        } catch(e){
+            console.warn('Firebase error:', e.message);
+        }
+    }
+
+    // ── Google Sign-In — mismo método que RiderTrack ──
+    window.loginConGoogle = function(){
+        var btn = document.getElementById('btn-google-login');
+        if(btn) btn.disabled = true;
+
+        if(typeof Capacitor === 'undefined' || !Capacitor.Plugins || !Capacitor.Plugins.GoogleAuth){
+            if(btn) btn.disabled = false;
+            window.showToast && window.showToast('⚠️ Google Auth no disponible');
+            return;
+        }
+
+        var doSignIn = function(){
+            Capacitor.Plugins.GoogleAuth.signIn()
+            .then(function(googleUser){
+                var credential = firebase.auth.GoogleAuthProvider.credential(
+                    googleUser.authentication.idToken
+                );
+                return firebase.auth().signInWithCredential(credential);
+            })
+            .then(function(){
+                if(btn) btn.disabled = false;
+            })
+            .catch(function(e){
+                if(btn) btn.disabled = false;
+                console.warn('Google Auth error:', e);
+                var msg = 'Error al iniciar con Google';
+                if(e.message && e.message.includes('cancel')) msg = 'Inicio cancelado';
+                if(e.message && e.message.includes('network')) msg = 'Sin conexión';
+                window.showToast && window.showToast('⚠️ ' + msg);
+            });
         };
 
-        window.firebaseReady = true;
-        console.log('✅ Firebase + Auth conectado');
+        Capacitor.Plugins.GoogleAuth.signOut()
+            .then(doSignIn)
+            .catch(doSignIn);
+    };
     </script>
+
     
     <style>
         /* ===== CONFIG ===== */
