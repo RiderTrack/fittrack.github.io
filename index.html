@@ -9,47 +9,38 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK (carga dinámica igual que RiderTrack) -->
     <script>
-    (function(){
-        var _s1 = document.createElement('script');
-        _s1.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
-        var _s2 = document.createElement('script');
-        _s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js';
-        var _s3 = document.createElement('script');
-        _s3.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js';
-        _s3.onload = function(){ setTimeout(initFirebase, 300); };
-        _s3.onerror = function(){ console.warn('Sin Firebase'); };
-        _s1.onload = function(){ document.head.appendChild(_s2); };
-        _s2.onload = function(){ document.head.appendChild(_s3); };
-        document.head.appendChild(_s1);
-    })();
+    var db, fbAuth, FITTRACK_USER_ID;
 
     function initFirebase(){
+        if(typeof firebase === 'undefined') return;
         try {
-            var firebaseConfig = {
-                apiKey: "AIzaSyArpeh_5hQqUIUnE19eQ-ClVeMnqhC0Zjs",
-                authDomain: "fittrack-e06be.firebaseapp.com",
-                projectId: "fittrack-e06be",
-                storageBucket: "fittrack-e06be.firebasestorage.app",
-                messagingSenderId: "202098578518",
-                appId: "1:202098578518:web:478894000ed30b9db017f7"
-            };
-            if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
-            var db = firebase.firestore();
+            if(!firebase.apps.length){
+                firebase.initializeApp({
+                    apiKey:'AIzaSyArpeh_5hQqUIUnE19eQ-ClVeMnqhC0Zjs',
+                    authDomain:'fittrack-e06be.firebaseapp.com',
+                    projectId:'fittrack-e06be',
+                    storageBucket:'fittrack-e06be.firebasestorage.app',
+                    messagingSenderId:'202098578518',
+                    appId:'1:202098578518:web:478894000ed30b9db017f7'
+                });
+            }
+            db     = firebase.firestore();
+            fbAuth = firebase.auth();
 
-            // ── Auth state ──
-            firebase.auth().onAuthStateChanged(function(user){
+            fbAuth.onAuthStateChanged(function(user){
                 if(user){
+                    FITTRACK_USER_ID = user.uid;
+                    window.FITTRACK_USER_ID = user.uid;
                     localStorage.setItem('FITTRACK_USER_ID', user.uid);
                     localStorage.setItem('FITTRACK_USER_NAME', user.displayName || 'Campeón');
-                    window.FITTRACK_USER_ID = user.uid;
                     var nombreEl = document.querySelector('.user-welcome h2');
                     if(nombreEl) nombreEl.textContent = 'Hola ' + (user.displayName ? user.displayName.split(' ')[0] : 'campeón') + ' 👋';
                     var loginScreen = document.getElementById('login-screen');
                     if(loginScreen) loginScreen.style.display = 'none';
                 } else {
-                    window.FITTRACK_USER_ID = localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
+                    FITTRACK_USER_ID = localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
+                    window.FITTRACK_USER_ID = FITTRACK_USER_ID;
                     var onboardingOk = localStorage.getItem('FITTRACK_ONBOARDING_OK');
                     if(onboardingOk){
                         var loginScreen = document.getElementById('login-screen');
@@ -58,40 +49,45 @@
                 }
             });
 
-            // ── Firestore ──
             window.fbSave = function(data){
-                var uid = window.FITTRACK_USER_ID || localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
+                var uid = FITTRACK_USER_ID || 'rudy';
                 db.collection('usuarios').doc(uid).set({
                     state: JSON.stringify(data),
                     updatedAt: new Date().toISOString()
-                }).catch(function(e){ console.warn('Firebase save error:', e.message); });
+                }).catch(function(e){ console.warn('fbSave error:', e.message); });
             };
 
             window.fbLoad = function(){
-                var uid = window.FITTRACK_USER_ID || localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
+                var uid = FITTRACK_USER_ID || 'rudy';
                 return db.collection('usuarios').doc(uid).get().then(function(snap){
                     if(snap.exists){ return JSON.parse(snap.data().state); }
                     return null;
                 }).catch(function(){ return null; });
             };
 
-            window.logoutGoogle = function(){
-                firebase.auth().signOut().then(function(){
-                    localStorage.removeItem('FITTRACK_USER_ID');
-                    localStorage.removeItem('FITTRACK_USER_NAME');
-                    window.location.reload();
-                });
-            };
-
             window.firebaseReady = true;
-            console.log('✅ Firebase compat listo');
+            console.log('✅ Firebase listo');
         } catch(e){
             console.warn('Firebase error:', e.message);
         }
     }
 
-    // ── Google Sign-In — mismo método que RiderTrack ──
-    window.loginConGoogle = function(){
+    // Cargar Firebase igual que RiderTrack
+    (function(){
+        var _s1 = document.createElement('script');
+        _s1.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+        var _s2 = document.createElement('script');
+        _s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js';
+        var _s3 = document.createElement('script');
+        _s3.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js';
+        _s3.onload = function(){ setTimeout(initFirebase, 500); };
+        _s1.onload = function(){ document.head.appendChild(_s2); };
+        _s2.onload = function(){ document.head.appendChild(_s3); };
+        document.head.appendChild(_s1);
+    })();
+
+    // Login con Google — igual que RiderTrack
+    function loginConGoogle(){
         var btn = document.getElementById('btn-google-login');
         if(btn) btn.disabled = true;
 
@@ -104,31 +100,20 @@
         var doSignIn = function(){
             Capacitor.Plugins.GoogleAuth.signIn()
             .then(function(googleUser){
-                console.log('GoogleAuth signIn OK, idToken:', googleUser.authentication ? 'ok' : 'missing');
-                var idToken = googleUser.authentication && googleUser.authentication.idToken;
-                if(!idToken){
-                    window.showToast && window.showToast('⚠️ No se obtuvo token de Google');
-                    if(btn) btn.disabled = false;
-                    return;
-                }
-                var GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
-                var credential = GoogleAuthProvider.credential(idToken);
-                return firebase.auth().signInWithCredential(credential);
+                var credential = firebase.auth.GoogleAuthProvider.credential(
+                    googleUser.authentication.idToken
+                );
+                return fbAuth.signInWithCredential(credential);
             })
-            .then(function(result){
-                if(!result) return;
-                console.log('✅ Firebase signIn OK:', result.user.email);
+            .then(function(){
                 if(btn) btn.disabled = false;
             })
             .catch(function(e){
                 if(btn) btn.disabled = false;
-                console.warn('Google Auth error:', JSON.stringify(e));
+                console.warn('Google Auth error:', e);
                 var msg = 'Error al iniciar con Google';
-                if(e && e.message){
-                    if(e.message.includes('cancel')) msg = 'Inicio cancelado';
-                    if(e.message.includes('network')) msg = 'Sin conexión';
-                    if(e.message.includes('auth/')) msg = 'Error Firebase: ' + e.code;
-                }
+                if(e.message && e.message.includes('cancel')) msg = 'Inicio cancelado';
+                if(e.message && e.message.includes('network')) msg = 'Sin conexión';
                 window.showToast && window.showToast('⚠️ ' + msg);
             });
         };
@@ -136,6 +121,14 @@
         Capacitor.Plugins.GoogleAuth.signOut()
             .then(doSignIn)
             .catch(doSignIn);
+    }
+
+    window.logoutGoogle = function(){
+        if(fbAuth) fbAuth.signOut().then(function(){
+            localStorage.removeItem('FITTRACK_USER_ID');
+            localStorage.removeItem('FITTRACK_USER_NAME');
+            window.location.reload();
+        });
     };
     </script>
 
