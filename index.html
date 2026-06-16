@@ -36,8 +36,21 @@
                     localStorage.setItem('FITTRACK_USER_NAME', user.displayName || 'Campeón');
                     var nombreEl = document.querySelector('.user-welcome h2');
                     if(nombreEl) nombreEl.textContent = 'Hola ' + (user.displayName ? user.displayName.split(' ')[0] : 'campeón') + ' 👋';
+                    // Ocultar login
                     var loginScreen = document.getElementById('login-screen');
                     if(loginScreen) loginScreen.style.display = 'none';
+                    // Si no tiene API key → mostrar onboarding
+                    var apiKey = localStorage.getItem('FITTRACK_ANTHROPIC_KEY');
+                    var onboardingOk = localStorage.getItem('FITTRACK_ONBOARDING_OK');
+                    if(!apiKey || !onboardingOk){
+                        var ob = document.getElementById('onboarding-screen');
+                        if(ob){
+                            // Pre-llenar el nombre
+                            var nombreInput = document.getElementById('onboarding-nombre');
+                            if(nombreInput && user.displayName) nombreInput.value = user.displayName.split(' ')[0];
+                            ob.style.display = 'flex';
+                        }
+                    }
                 } else {
                     FITTRACK_USER_ID = localStorage.getItem('FITTRACK_USER_ID') || 'rudy';
                     window.FITTRACK_USER_ID = FITTRACK_USER_ID;
