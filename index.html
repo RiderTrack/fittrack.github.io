@@ -104,20 +104,31 @@
         var doSignIn = function(){
             Capacitor.Plugins.GoogleAuth.signIn()
             .then(function(googleUser){
-                var credential = firebase.auth.GoogleAuthProvider.credential(
-                    googleUser.authentication.idToken
-                );
+                console.log('GoogleAuth signIn OK, idToken:', googleUser.authentication ? 'ok' : 'missing');
+                var idToken = googleUser.authentication && googleUser.authentication.idToken;
+                if(!idToken){
+                    window.showToast && window.showToast('⚠️ No se obtuvo token de Google');
+                    if(btn) btn.disabled = false;
+                    return;
+                }
+                var GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
+                var credential = GoogleAuthProvider.credential(idToken);
                 return firebase.auth().signInWithCredential(credential);
             })
-            .then(function(){
+            .then(function(result){
+                if(!result) return;
+                console.log('✅ Firebase signIn OK:', result.user.email);
                 if(btn) btn.disabled = false;
             })
             .catch(function(e){
                 if(btn) btn.disabled = false;
-                console.warn('Google Auth error:', e);
+                console.warn('Google Auth error:', JSON.stringify(e));
                 var msg = 'Error al iniciar con Google';
-                if(e.message && e.message.includes('cancel')) msg = 'Inicio cancelado';
-                if(e.message && e.message.includes('network')) msg = 'Sin conexión';
+                if(e && e.message){
+                    if(e.message.includes('cancel')) msg = 'Inicio cancelado';
+                    if(e.message.includes('network')) msg = 'Sin conexión';
+                    if(e.message.includes('auth/')) msg = 'Error Firebase: ' + e.code;
+                }
                 window.showToast && window.showToast('⚠️ ' + msg);
             });
         };
