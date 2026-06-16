@@ -1,7 +1,7 @@
 {
   "name": "fittrack-app",
-  "version": "1.0.1",
-  "description": "FitTrack - Aplicación de Entrenamiento Personal",
+  "version": "1.0.0",
+  "description": "FitTrack - Aplicaci\u00f3n de Entrenamiento Personal",
   "main": "index.js",
   "scripts": {
     "build": "echo 'No build needed for HTML app'",
@@ -19,7 +19,7 @@
     "@capacitor/share": "^6.0.0",
     "@capacitor/splash-screen": "^6.0.0",
     "@capacitor/status-bar": "^6.0.0",
-    "@codetrix-studio/capacitor-google-auth": "3.3.0"
+    "@codetrix-studio/capacitor-google-auth": "^3.3.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.0.0"

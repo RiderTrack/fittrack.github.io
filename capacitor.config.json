@@ -12,22 +12,22 @@
     "webContentsDebuggingEnabled": false
   },
   "plugins": {
-    "GoogleAuth": {
-      "scopes": ["profile", "email"],
-      "serverClientId": "202098578518-0b5e3vcnv4ark4955k3ek5gjl9eeoct8.apps.googleusercontent.com",
-      "forceCodeForRefreshToken": true
-    },
     "Camera": {
-      "permissions": ["camera", "photos"]
+      "permissions": [
+        "camera",
+        "photos"
+      ]
     },
     "Filesystem": {
-      "permissions": ["publicStorage"]
+      "permissions": [
+        "publicStorage"
+      ]
     },
     "Share": {},
     "App": {},
     "LocalNotifications": {
       "smallIcon": "ic_stat_icon_config_sample",
-      "iconColor": "#1DB954",
+      "iconColor": "#7c3aed",
       "sound": "beep.wav"
     },
     "SplashScreen": {
@@ -36,6 +36,14 @@
       "backgroundColor": "#0d0d1a",
       "androidSplashResourceName": "splash",
       "showSpinner": false
+    },
+    "GoogleAuth": {
+      "scopes": [
+        "profile",
+        "email"
+      ],
+      "serverClientId": "202098578518-0b5e3vcnv4ark4955k3ek5gjl9eeoct8.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
     }
   }
 }
