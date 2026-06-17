@@ -68,6 +68,13 @@ jobs:
           GRADLE="android/app/build.gradle"
           sed -i '/dependencies {/a\    implementation "com.google.android.gms:play-services-auth:20.7.0"' "$GRADLE"
 
+      - name: Add Spotify deep link intent filter
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          # Agregar intent filter para fittrack://spotify-callback
+          sed -i 's|</activity>|        <intent-filter>\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:scheme="fittrack" android:host="callback" />\n            </intent-filter>\n        </activity>|' "$MANIFEST"
+          echo "✅ Deep link Spotify agregado"
+
       - name: Replace all app icons
         run: |
           if [ -f "icon.png" ]; then
