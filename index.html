@@ -11,12 +11,9 @@
 
     <script>
     var db, fbAuth, FITTRACK_USER_ID;
-    // Si es callback de Spotify no inicializar Firebase todavía
-    var _esCallbackSpotify = (new URLSearchParams(window.location.search)).get('spotify') === 'ok';
 
     function initFirebase(){
         if(typeof firebase === 'undefined') return;
-        if(_esCallbackSpotify) return; // Esperar a que Spotify procese primero
         try {
             if(!firebase.apps.length){
                 firebase.initializeApp({
@@ -5448,7 +5445,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
     <script>
     // ══ SPOTIFY CONFIG ══
     var SPOTIFY_CLIENT_ID = '9542b79ff46f44aa9ce31a7450497af6';
-    var SPOTIFY_REDIRECT  = 'https://ridertrack.github.io/fittrack.github.io/callback.html';
+    var SPOTIFY_REDIRECT  = 'fittrack://callback';
     var SPOTIFY_SCOPES    = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state user-library-read user-library-modify';
     var spotifyPlayer     = null;
     var spotifyDeviceId   = null;
@@ -5510,7 +5507,6 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 // Limpiar URL del callback
                 window.history.replaceState(null, null, window.location.pathname);
                 // Ahora sí inicializar Firebase
-                _esCallbackSpotify = false;
                 initFirebase();
                 spotifyIniciarSDK(data.access_token);
                 // Abrir modal automáticamente
@@ -5523,32 +5519,38 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         .catch(function(e){ console.warn('Spotify token error:', e); });
     }
 
-    // ── Verificar callback al cargar ──
+    // ── Escuchar deep link cuando APK regresa de Spotify ──
     document.addEventListener('DOMContentLoaded', function(){
-        // Verificar si viene de callback de Spotify
-        var params = new URLSearchParams(window.location.search);
-        var spotifyOk = params.get('spotify');
-        if(spotifyOk === 'ok'){
-            var code = localStorage.getItem('SPOTIFY_CODE');
-            var codeTime = parseInt(localStorage.getItem('SPOTIFY_CODE_TIME') || '0');
-            // Code válido por 5 minutos
-            if(code && (Date.now() - codeTime) < 300000){
-                localStorage.removeItem('SPOTIFY_CODE');
-                localStorage.removeItem('SPOTIFY_CODE_TIME');
-                // Limpiar URL
-                window.history.replaceState(null, null, window.location.pathname);
-                spotifyExchangeCode(code);
-                return;
-            }
-        }
-        // Limpiar URL
-        if(params.has('spotify')) window.history.replaceState(null, null, window.location.pathname);
-        // Verificar token guardado
+        // Verificar token guardado (sesión previa)
         var savedToken = localStorage.getItem('SPOTIFY_TOKEN');
         var tokenTime  = parseInt(localStorage.getItem('SPOTIFY_TOKEN_TIME') || '0');
         if(savedToken && (Date.now() - tokenTime) < 3500000){
             spotifyAccessToken = savedToken;
             spotifyIniciarSDK(savedToken);
+        }
+
+        // Escuchar deep link fittrack://callback?code=XXX
+        if(typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.App){
+            Capacitor.Plugins.App.addListener('appUrlOpen', function(data){
+                console.log('appUrlOpen:', data.url);
+                try {
+                    var url = new URL(data.url);
+                    var code = url.searchParams.get('code');
+                    var error = url.searchParams.get('error');
+                    if(error){
+                        showToast('⚠️ Spotify: ' + error);
+                        return;
+                    }
+                    if(code && localStorage.getItem('SPOTIFY_VERIFIER')){
+                        spotifyExchangeCode(code);
+                        // Abrir modal
+                        setTimeout(function(){
+                            var modal = document.getElementById('spotify-modal');
+                            if(modal) modal.style.display = 'block';
+                        }, 500);
+                    }
+                } catch(e){ console.warn('appUrlOpen error:', e); }
+            });
         }
     });
 
