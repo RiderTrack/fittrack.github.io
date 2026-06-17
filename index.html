@@ -11,9 +11,12 @@
 
     <script>
     var db, fbAuth, FITTRACK_USER_ID;
+    // Si es callback de Spotify no inicializar Firebase todavía
+    var _esCallbackSpotify = (new URLSearchParams(window.location.search)).get('spotify') === 'ok';
 
     function initFirebase(){
         if(typeof firebase === 'undefined') return;
+        if(_esCallbackSpotify) return; // Esperar a que Spotify procese primero
         try {
             if(!firebase.apps.length){
                 firebase.initializeApp({
@@ -5506,6 +5509,9 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 spotifyAccessToken = data.access_token;
                 // Limpiar URL del callback
                 window.history.replaceState(null, null, window.location.pathname);
+                // Ahora sí inicializar Firebase
+                _esCallbackSpotify = false;
+                initFirebase();
                 spotifyIniciarSDK(data.access_token);
                 // Abrir modal automáticamente
                 setTimeout(function(){
