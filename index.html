@@ -686,7 +686,7 @@
         .btn-primary {
             width: 100%;
             background: linear-gradient(135deg, rgb(var(--primary-rgb)), rgb(var(--secondary-rgb)));
-            color: #fff;
+            color: rgb(var(--text-rgb));
             border: none;
             border-radius: var(--border-radius);
             padding: 14px;
@@ -1181,20 +1181,20 @@
             <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.07);border:1px solid rgba(139,92,246,0.35);border-radius:14px;padding:13px 16px;">
                 <span style="font-size:1.1rem;">✏️</span>
                 <input id="onboarding-nombre" type="text" placeholder="Tu nombre" maxlength="30"
-                    style="flex:1;background:none;border:none;color:#fff;font-family:inherit;font-size:0.95rem;outline:none;font-weight:600;"
+                    style="flex:1;background:none;border:none;color:rgb(var(--text-rgb));font-family:inherit;font-size:0.95rem;outline:none;font-weight:600;"
                     autocomplete="off">
             </div>
             <!-- API Key -->
             <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.07);border:1px solid rgba(139,92,246,0.35);border-radius:14px;padding:13px 16px;">
                 <span style="font-size:1.1rem;">🔑</span>
                 <input id="onboarding-apikey" type="password" placeholder="API Key de Anthropic (sk-ant-...)"
-                    style="flex:1;background:none;border:none;color:#fff;font-family:inherit;font-size:0.82rem;outline:none;font-weight:500;"
+                    style="flex:1;background:none;border:none;color:rgb(var(--text-rgb));font-family:inherit;font-size:0.82rem;outline:none;font-weight:500;"
                     autocomplete="off">
             </div>
             <p style="font-size:0.65rem;color:rgba(200,180,255,0.5);margin:0;text-align:center;">Se guarda solo en tu celular · console.anthropic.com</p>
             <!-- Botón conectar -->
-            <button onclick="completarOnboarding()" style="width:100%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:16px;padding:16px;font-size:1rem;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.5px;box-shadow:0 4px 24px rgba(124,58,237,0.5);">
-                ⚡ Conectar FitBot IA
+            <button onclick="completarOnboarding()" style="width:100%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:rgb(var(--text-rgb));border:none;border-radius:16px;padding:16px;font-size:1rem;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.5px;box-shadow:0 4px 24px rgba(124,58,237,0.5);">
+                🤖 Conectar FitBot IA
             </button>
             <button onclick="saltarOnboarding()" style="background:none;border:none;color:rgba(200,180,255,0.4);font-size:0.75rem;cursor:pointer;font-family:inherit;padding:4px;">
                 Configurar después
@@ -1210,7 +1210,7 @@
             <p style="font-size:0.85rem;color:rgba(200,180,255,0.6);">Inicia sesión para continuar</p>
         </div>
         <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px;">
-            <button onclick="loginConGoogle()" style="width:100%;background:#fff;color:#1f1f1f;border:none;border-radius:14px;padding:15px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+            <button onclick="loginConGoogle()" style="width:100%;background:rgb(var(--text-rgb));color:rgb(var(--bg-rgb));border:none;border-radius:14px;padding:15px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
                 <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                 Continuar con Google
             </button>
@@ -1245,7 +1245,7 @@
         top:0;left:0;right:0;
         z-index:9999;
         background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgb(var(--secondary-rgb)));
-        color:#fff;
+        color:rgb(var(--text-rgb));
         padding:14px 20px;
         text-align:center;
         box-shadow:0 4px 20px rgba(0,0,0,0.3);
@@ -1256,7 +1256,7 @@
         <div id="descanso-banner-ejercicio" style="font-size:0.72rem;opacity:0.85;">Siguiente serie lista cuando termines</div>
         <button onclick="stopTimer()" style="
             margin-top:8px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);
-            color:#fff;border-radius:20px;padding:5px 16px;font-size:0.75rem;font-weight:700;cursor:pointer;
+            color:rgb(var(--text-rgb));border-radius:20px;padding:5px 16px;font-size:0.75rem;font-weight:700;cursor:pointer;
         ">✖ Saltar descanso</button>
     </div>
 
@@ -1267,7 +1267,7 @@
         top:0;left:0;right:0;
         z-index:9999;
         background:linear-gradient(135deg,#00c853,#00e676);
-        color:#fff;
+        color:rgb(var(--text-rgb));
         padding:16px 20px;
         text-align:center;
         box-shadow:0 4px 20px rgba(0,200,80,0.4);
@@ -1484,7 +1484,7 @@
         <!-- Tabs Hoy / Todos / Buscar -->
         <div style="display:flex;gap:8px;margin-bottom:16px;">
             <button id="tab-hoy" onclick="switchBibliotecaTab('hoy')"
-                style="flex:1;padding:10px;border-radius:12px;border:2px solid rgb(var(--primary-rgb));background:rgb(var(--primary-rgb));color:#fff;font-weight:700;font-size:0.8rem;cursor:pointer;font-family:inherit;">
+                style="flex:1;padding:10px;border-radius:12px;border:2px solid rgb(var(--primary-rgb));background:rgb(var(--primary-rgb));color:rgb(var(--text-rgb));font-weight:700;font-size:0.8rem;cursor:pointer;font-family:inherit;">
                 💪 Hoy
             </button>
             <button id="tab-todos" onclick="switchBibliotecaTab('todos')"
@@ -1642,7 +1642,7 @@
             <div style="display:flex;flex-direction:column;gap:10px;">
                 <!-- Info de cuenta Google -->
                 <div id="google-account-info" style="display:flex;align-items:center;gap:12px;background:rgba(var(--text-rgb),0.04);border:1px solid rgba(var(--border-rgb),0.1);border-radius:10px;padding:10px 13px;">
-                    <div id="google-account-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;">?</div>
+                    <div id="google-account-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:rgb(var(--text-rgb));flex-shrink:0;">?</div>
                     <div style="flex:1;min-width:0;">
                         <div id="google-account-name" style="font-size:0.85rem;font-weight:700;color:rgb(var(--text-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
                         <div id="google-account-email" style="font-size:0.7rem;color:rgb(var(--text-muted-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
@@ -1668,7 +1668,7 @@
                     style="width:100%;background:rgba(var(--text-rgb),0.06);border:1px solid rgba(var(--border-rgb),0.15);border-radius:10px;padding:10px 13px;color:rgb(var(--text-rgb));font-family:inherit;font-size:0.82rem;outline:none;">
                 <p style="font-size:0.67rem;color:rgb(var(--text-muted-rgb));margin:0;">Se guarda solo en tu celular. Obtén tu key en console.anthropic.com</p>
                 <div style="display:flex;gap:8px;">
-                    <button onclick="guardarApiKey()" style="flex:1;background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.7));border:none;color:#fff;border-radius:10px;padding:9px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                    <button onclick="guardarApiKey()" style="flex:1;background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.7));border:none;color:rgb(var(--text-rgb));border-radius:10px;padding:9px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">
                         💾 Guardar Key
                     </button>
                     <button onclick="borrarApiKey()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#f87171;border-radius:10px;padding:9px 12px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">
@@ -1776,8 +1776,481 @@
         </button>
     </nav>
 
-    <script>// ╔══════════════════════════════════════════════════════════════════╗
-// ║  FITBOT ENGINE v1.0 — Motor de Decisión Inteligente             ║
+    <!-- ══ BOTÓN FLOTANTE CHAT GYM ══ -->
+    <!-- ══ NOW PLAYING — Pastilla flotante Spotify ══ -->
+    <div id="spotify-now-playing" style="display:none;position:fixed;bottom:338px;right:12px;z-index:998;background:rgba(18,18,18,0.95);backdrop-filter:blur(12px);border:1px solid rgba(29,185,84,0.3);border-radius:50px;padding:6px 14px 6px 6px;align-items:center;gap:8px;max-width:220px;box-shadow:0 4px 20px rgba(0,0,0,0.4);cursor:pointer;" onclick="toggleSpotify()">
+        <img id="np-album-art" src="" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#1DB954;">
+        <div style="flex:1;min-width:0;">
+            <div id="np-track-name" style="font-size:0.72rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;">—</div>
+            <div id="np-artist-name" style="font-size:0.62rem;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;">—</div>
+        </div>
+        <button onclick="event.stopPropagation();spotifyPlayPause()" id="np-play-btn" style="background:none;border:none;color:#1DB954;font-size:1rem;cursor:pointer;flex-shrink:0;padding:0;">⏸</button>
+    </div>
+
+    <button onclick="gymChatAbrir()" id="gymchat-fab" style="position:fixed;bottom:276px;right:16px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;color:rgb(var(--text-rgb));font-size:1.3rem;cursor:pointer;box-shadow:0 4px 20px rgba(14,165,233,0.4);display:flex;align-items:center;justify-content:center;" title="Chat Gym">
+        💬
+        <span id="gymchat-badge" style="display:none;position:absolute;top:2px;right:2px;background:#ef4444;color:rgb(var(--text-rgb));border-radius:50%;width:18px;height:18px;font-size:0.6rem;font-weight:900;align-items:center;justify-content:center;">0</span>
+    </button>
+
+    <!-- ══ MODAL CHAT GYM — FULLSCREEN ══ -->
+    <div id="gymchat-modal" style="display:none;position:fixed;inset:0;z-index:10500;background:rgb(var(--bg-rgb));flex-direction:column;">
+
+        <!-- Vista Inbox -->
+        <div id="gymchat-view-inbox" style="display:flex;flex-direction:column;height:100%;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid rgba(var(--border-rgb),0.15);flex-shrink:0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:1.3rem;">💬</span>
+                    <div>
+                        <div style="font-weight:900;font-size:1rem;color:rgb(var(--text-rgb));">Chat Gym</div>
+                        <div id="gymchat-mi-codigo" style="font-size:0.65rem;color:#0ea5e9;font-weight:700;cursor:pointer;" onclick="gymChatMostrarCodigo()">Mi código: —</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button onclick="gymChatUnirse()" style="background:rgba(14,165,233,0.15);border:1px solid rgba(14,165,233,0.3);color:#0ea5e9;border-radius:20px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">+ Agregar amigo</button>
+                    <button onclick="gymChatCerrar()" style="background:rgba(var(--text-rgb),0.08);border:none;color:rgb(var(--text-muted-rgb));border-radius:50%;width:34px;height:34px;font-size:1rem;cursor:pointer;">✕</button>
+                </div>
+            </div>
+            <!-- Lista de chats -->
+            <div id="gymchat-inbox-list" style="flex:1;overflow-y:auto;padding:12px 16px;">
+                <div style="text-align:center;padding:40px 20px;color:rgb(var(--text-muted-rgb));">
+                    <div style="font-size:2.5rem;margin-bottom:12px;">💪</div>
+                    <div style="font-size:0.85rem;font-weight:700;">Sin compañeros de gym aún</div>
+                    <div style="font-size:0.72rem;margin-top:6px;">Agrega amigos con tu código</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Conversación -->
+        <div id="gymchat-view-conv" style="display:none;flex-direction:column;height:100%;">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(var(--border-rgb),0.15);flex-shrink:0;">
+                <button onclick="gymChatVolverInbox()" style="background:rgba(var(--text-rgb),0.08);border:none;color:rgb(var(--text-muted-rgb));border-radius:50%;width:34px;height:34px;font-size:1.1rem;cursor:pointer;">←</button>
+                <div id="gymchat-conv-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:rgb(var(--text-rgb));flex-shrink:0;">?</div>
+                <div style="flex:1;">
+                    <div id="gymchat-conv-nombre" style="font-weight:800;font-size:0.9rem;color:rgb(var(--text-rgb));">—</div>
+                    <div id="gymchat-conv-estado" style="font-size:0.65rem;color:#4ade80;">● En línea</div>
+                </div>
+                <button onclick="gymChatEnviarRutina()" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;color:rgb(var(--text-rgb));border-radius:20px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">🤖 Enviar rutina</button>
+            </div>
+            <!-- Mensajes -->
+            <div id="gymchat-mensajes" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;"></div>
+            <!-- Input -->
+            <div style="padding:10px 14px;border-top:1px solid rgba(var(--border-rgb),0.15);display:flex;gap:8px;flex-shrink:0;">
+                <input id="gymchat-input" type="text" placeholder="Mensaje..." maxlength="500"
+                    style="flex:1;background:rgba(var(--text-rgb),0.06);border:1px solid rgba(var(--border-rgb),0.15);border-radius:22px;padding:10px 16px;color:rgb(var(--text-rgb));font-family:inherit;font-size:0.85rem;outline:none;"
+                    onkeydown="if(event.key==='Enter') gymChatEnviar()">
+                <button onclick="gymChatEnviar()" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;color:rgb(var(--text-rgb));border-radius:50%;width:42px;height:42px;font-size:1.1rem;cursor:pointer;flex-shrink:0;">➤</button>
+            </div>
+        </div>
+
+        <!-- Modal código invitación -->
+        <div id="gymchat-modal-codigo" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:10;align-items:center;justify-content:center;padding:24px;">
+            <div style="background:rgb(var(--bg-rgb));border-radius:20px;padding:24px;width:100%;max-width:340px;">
+                <h3 style="font-size:1rem;font-weight:900;color:rgb(var(--text-rgb));margin-bottom:16px;text-align:center;">💬 Conectar con amigo</h3>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div id="gymchat-codigo-display" style="background:rgba(14,165,233,0.1);border:2px dashed rgba(14,165,233,0.4);border-radius:14px;padding:16px;text-align:center;">
+                        <div style="font-size:0.7rem;color:rgb(var(--text-muted-rgb));margin-bottom:4px;">TU CÓDIGO</div>
+                        <div id="gymchat-codigo-texto" style="font-size:1.4rem;font-weight:900;color:#0ea5e9;letter-spacing:4px;">——</div>
+                        <button onclick="gymChatCopiarCodigo()" style="margin-top:8px;background:rgba(14,165,233,0.2);border:none;color:#0ea5e9;border-radius:10px;padding:5px 14px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copiar</button>
+                    </div>
+                    <div style="text-align:center;font-size:0.72rem;color:rgb(var(--text-muted-rgb));">— o ingresa el código de tu amigo —</div>
+                    <input id="gymchat-input-codigo" type="text" placeholder="Ej: FIT-A1B2C3" maxlength="12"
+                        style="width:100%;background:rgba(var(--text-rgb),0.06);border:1px solid rgba(var(--border-rgb),0.15);border-radius:12px;padding:12px 16px;color:rgb(var(--text-rgb));font-family:inherit;font-size:1rem;outline:none;text-align:center;text-transform:uppercase;letter-spacing:2px;">
+                    <button onclick="gymChatUsarCodigo()" style="width:100%;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;color:rgb(var(--text-rgb));border-radius:14px;padding:13px;font-size:0.9rem;font-weight:800;cursor:pointer;font-family:inherit;">Conectar 💪</button>
+                    <button onclick="document.getElementById('gymchat-modal-codigo').style.display='none';" style="background:none;border:none;color:rgb(var(--text-muted-rgb));font-size:0.78rem;cursor:pointer;font-family:inherit;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estilos chat gym -->
+    <style>
+    .gymchat-msg-yo   { background:rgba(14,165,233,0.2);border-radius:16px 16px 4px 16px;padding:9px 13px;max-width:78%;align-self:flex-end;font-size:0.82rem;color:rgb(var(--text-rgb)); }
+    .gymchat-msg-otro { background:rgba(var(--text-rgb),0.07);border-radius:16px 16px 16px 4px;padding:9px 13px;max-width:78%;align-self:flex-start;font-size:0.82rem;color:rgb(var(--text-rgb)); }
+    .gymchat-msg-rutina { background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.3);border-radius:14px;padding:12px 14px;max-width:85%;font-size:0.78rem;color:rgb(var(--text-rgb)); }
+    .gymchat-chat-item { display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;cursor:pointer;border:1px solid rgba(var(--border-rgb),0.1);background:rgba(var(--text-rgb),0.03);margin-bottom:8px; }
+    .gymchat-chat-item:active { background:rgba(14,165,233,0.1); }
+    </style>
+
+    <script>
+    // ══════════════════════════════════════════
+    // CHAT GYM — FitTrack
+    // ══════════════════════════════════════════
+    var _gymChatActual = null;
+    var _gymChatSub    = null;
+    var _gymInboxSub   = null;
+    var _gymMiCodigo   = null;
+    var _gymChats      = [];
+
+    function gymChatAbrir(){
+        var modal = document.getElementById('gymchat-modal');
+        if(!modal) return;
+        modal.style.display = 'flex';
+        gymChatIniciar();
+    }
+
+    function gymChatCerrar(){
+        document.getElementById('gymchat-modal').style.display = 'none';
+        gymChatVolverInbox();
+    }
+
+    function gymChatIniciar(){
+        if(!window.FITTRACK_USER_ID || !db) return;
+        var uid = window.FITTRACK_USER_ID;
+        // Generar o cargar código personal
+        var codigoGuardado = localStorage.getItem('GYMCHAT_CODIGO');
+        if(!codigoGuardado){
+            codigoGuardado = 'FIT-' + Math.random().toString(36).substr(2,6).toUpperCase();
+            localStorage.setItem('GYMCHAT_CODIGO', codigoGuardado);
+        }
+        _gymMiCodigo = codigoGuardado;
+        // Guardar en Firestore para que otros te encuentren
+        db.collection('fittrack_usuarios').doc(uid).set({
+            codigo: codigoGuardado,
+            nombre: localStorage.getItem('FITTRACK_USER_NAME') || 'Campeón',
+            uid: uid,
+            updatedAt: Date.now()
+        }, {merge:true});
+        // Mostrar código en header
+        var el = document.getElementById('gymchat-mi-codigo');
+        if(el) el.textContent = 'Mi código: ' + codigoGuardado;
+        document.getElementById('gymchat-codigo-texto').textContent = codigoGuardado;
+        // Suscribir inbox
+        gymChatSuscribirInbox();
+    }
+
+    function gymChatSuscribirInbox(){
+        if(_gymInboxSub){ _gymInboxSub(); _gymInboxSub = null; }
+        var uid = window.FITTRACK_USER_ID;
+        if(!uid || !db) return;
+        _gymInboxSub = db.collection('gymchats')
+            .where('miembros', 'array-contains', uid)
+            .onSnapshot(function(snap){
+                _gymChats = [];
+                snap.forEach(function(doc){
+                    var d = doc.data(); d.id = doc.id;
+                    _gymChats.push(d);
+                });
+                _gymChats.sort(function(a,b){ return ((b.ultimoMsg&&b.ultimoMsg.ts)||0) - ((a.ultimoMsg&&a.ultimoMsg.ts)||0); });
+                gymChatRenderInbox();
+                gymChatActualizarBadge();
+            });
+    }
+
+    function gymChatRenderInbox(){
+        var list = document.getElementById('gymchat-inbox-list');
+        if(!list) return;
+        if(!_gymChats.length){
+            list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:rgb(var(--text-muted-rgb));"><div style="font-size:2.5rem;margin-bottom:12px;">💪</div><div style="font-size:0.85rem;font-weight:700;">Sin compañeros de gym aún</div><div style="font-size:0.72rem;margin-top:6px;">Toca "+ Agregar amigo" para conectar</div></div>';
+            return;
+        }
+        var miUid = window.FITTRACK_USER_ID;
+        var html = '';
+        _gymChats.forEach(function(chat){
+            // Obtener nombre del otro miembro usando el índice en miembros[]
+            var otroNombre = 'Amigo';
+            if(chat.nombres && chat.miembros){
+                for(var i=0; i<chat.miembros.length; i++){
+                    if(chat.miembros[i] !== miUid){ otroNombre = chat.nombres[i] || 'Amigo'; break; }
+                }
+            }
+            var inicial = otroNombre.charAt(0).toUpperCase();
+            var ultimoTxt = chat.ultimoMsg ? (chat.ultimoMsg.esRutina ? '🤖 Rutina enviada' : (chat.ultimoMsg.texto||'').substring(0,40)) : 'Sin mensajes';
+            // Badge de no leídos en este chat
+            var noLeidos = (chat.noLeidos && chat.noLeidos[miUid]) ? chat.noLeidos[miUid] : 0;
+            var badgeHtml = noLeidos > 0 ? '<div style="background:#ef4444;color:rgb(var(--text-rgb));border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;padding:0 4px;flex-shrink:0;">' + (noLeidos > 99 ? '99+' : noLeidos) + '</div>' : '';
+            var safeNombre = otroNombre.replace(/'/g, '');
+            html += '<div class="gymchat-chat-item" onclick="gymChatAbrirConv(\'' + chat.id + '\',\'' + safeNombre + '\')" style="' + (noLeidos > 0 ? 'border-color:rgba(14,165,233,0.4);background:rgba(14,165,233,0.05);' : '') + '">';
+            html += '<div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:rgb(var(--text-rgb));flex-shrink:0;position:relative;">' + inicial;
+            if(noLeidos > 0){ html += '<div style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:#ef4444;border-radius:50%;border:2px solid rgb(var(--card-bg-rgb));"></div>'; }
+            html += '</div>';
+            html += '<div style="flex:1;min-width:0;"><div style="font-weight:' + (noLeidos > 0 ? '800' : '700') + ';font-size:0.88rem;color:rgb(var(--text-rgb));">' + otroNombre + '</div>';
+            html += '<div style="font-size:0.72rem;color:' + (noLeidos > 0 ? 'rgb(var(--text-rgb))' : 'rgb(var(--text-muted-rgb))') + ';font-weight:' + (noLeidos > 0 ? '600' : '400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ultimoTxt + '</div></div>';
+            html += badgeHtml;
+            html += '</div>';
+        });
+        list.innerHTML = html;
+    }
+
+    function gymChatActualizarBadge(){
+        var badge = document.getElementById('gymchat-badge');
+        if(!badge) return;
+        var miUid = window.FITTRACK_USER_ID;
+        var totalNoLeidos = 0;
+        _gymChats.forEach(function(chat){
+            if(chat.noLeidos && chat.noLeidos[miUid]){
+                totalNoLeidos += chat.noLeidos[miUid];
+            }
+        });
+        if(totalNoLeidos > 0){
+            badge.style.display = 'flex';
+            badge.textContent = totalNoLeidos > 99 ? '99+' : totalNoLeidos;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function gymChatAbrirConv(chatId, nombre){
+        _gymChatActual = chatId;
+        document.getElementById('gymchat-view-inbox').style.display = 'none';
+        document.getElementById('gymchat-view-conv').style.display = 'flex';
+        document.getElementById('gymchat-conv-nombre').textContent = nombre;
+        document.getElementById('gymchat-conv-avatar').textContent = nombre.charAt(0).toUpperCase();
+        // Resetear mis no leídos al abrir la conversación
+        var miUid = window.FITTRACK_USER_ID;
+        var updateReset = {};
+        updateReset['noLeidos.' + miUid] = 0;
+        db.collection('gymchats').doc(chatId).update(updateReset).catch(function(){});
+        // Suscribir mensajes
+        if(_gymChatSub){ _gymChatSub(); _gymChatSub = null; }
+        _gymChatSub = db.collection('gymchats').doc(chatId)
+            .collection('mensajes')
+            .orderBy('timestamp','asc')
+            .limitToLast(50)
+            .onSnapshot(function(snap){
+                var container = document.getElementById('gymchat-mensajes');
+                if(!container) return;
+                container.innerHTML = '';
+                snap.forEach(function(doc){
+                    var m = doc.data();
+                    var esYo = m.autorUid === window.FITTRACK_USER_ID;
+                    var div = document.createElement('div');
+                    if(m.esRutina){
+                        div.className = 'gymchat-msg-rutina';
+                        div.style.alignSelf = esYo ? 'flex-end' : 'flex-start';
+                        var safeTexto = (m.texto||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                        div.innerHTML = '<div style="font-size:0.7rem;font-weight:800;color:#a78bfa;margin-bottom:6px;">🤖 RUTINA DE FITBOT</div>' +
+                            '<div style="font-size:0.75rem;white-space:pre-wrap;">' + safeTexto + '</div>' +
+                            (!esYo ? '<button onclick="gymChatCargarRutina(\'' + doc.id + '\',\'' + chatId + '\')" style="margin-top:8px;width:100%;background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);color:#a78bfa;border-radius:10px;padding:7px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">💪 Cargar en mi Rutina Hoy</button>' : '');
+                    } else {
+                        div.className = esYo ? 'gymchat-msg-yo' : 'gymchat-msg-otro';
+                        div.textContent = m.texto || '';
+                    }
+                    container.appendChild(div);
+                });
+                container.scrollTop = container.scrollHeight;
+            });
+    }
+
+    function gymChatVolverInbox(){
+        if(_gymChatSub){ _gymChatSub(); _gymChatSub = null; }
+        _gymChatActual = null;
+        document.getElementById('gymchat-view-conv').style.display = 'none';
+        document.getElementById('gymchat-view-inbox').style.display = 'flex';
+    }
+
+    function gymChatEnviar(){
+        var inp = document.getElementById('gymchat-input');
+        var txt = (inp.value||'').trim();
+        if(!txt || !_gymChatActual) return;
+        inp.value = '';
+        var msg = {
+            texto: txt.substring(0,500),
+            autorUid: window.FITTRACK_USER_ID,
+            autorNombre: localStorage.getItem('FITTRACK_USER_NAME') || 'Yo',
+            timestamp: Date.now(),
+            esRutina: false
+        };
+        db.collection('gymchats').doc(_gymChatActual).collection('mensajes').add(msg)
+        .then(function(){
+            // Buscar el otro uid para incrementar su contador de no leídos
+            var miUid = window.FITTRACK_USER_ID;
+            db.collection('gymchats').doc(_gymChatActual).get().then(function(docChat){
+                if(!docChat.exists) return;
+                var miembros = docChat.data().miembros || [];
+                var otroUid = miembros.filter(function(u){ return u !== miUid; })[0];
+                if(!otroUid) return;
+                var update = {};
+                update['noLeidos.' + otroUid] = firebase.firestore.FieldValue.increment(1);
+                db.collection('gymchats').doc(_gymChatActual).set({
+                    ultimoMsg: { texto: txt.substring(0,80), ts: msg.timestamp }
+                }, {merge:true}).then(function(){
+                    db.collection('gymchats').doc(_gymChatActual).update(update);
+                });
+            });
+        });
+    }
+
+    function gymChatEnviarRutina(){
+        if(!_gymChatActual){ showToast('⚠️ Sin chat activo'); return; }
+        var apiKey = getFitBotKey ? getFitBotKey() : localStorage.getItem('FITTRACK_ANTHROPIC_KEY');
+        if(!apiKey){ showToast('⚠️ Configura tu API key de Anthropic en Ajustes'); return; }
+        showToast('🤖 Generando rutina con FitBot...');
+        fetch('https://api.anthropic.com/v1/messages', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+            body: JSON.stringify({
+                model:'claude-sonnet-4-6',
+                max_tokens:800,
+                messages:[{role:'user', content:'Genera una rutina de entrenamiento completa para hoy. Incluye: nombre de la rutina, grupos musculares, 5-6 ejercicios con series, repeticiones y descanso. Formato limpio y conciso en español.'}]
+            })
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            var texto = data.content && data.content[0] ? data.content[0].text : 'Error al generar rutina';
+            var msg = {
+                texto: texto,
+                autorUid: window.FITTRACK_USER_ID,
+                autorNombre: localStorage.getItem('FITTRACK_USER_NAME') || 'Yo',
+                timestamp: Date.now(),
+                esRutina: true
+            };
+            db.collection('gymchats').doc(_gymChatActual).collection('mensajes').add(msg)
+            .then(function(){
+                // Incrementar no leídos del otro miembro
+                var miUid = window.FITTRACK_USER_ID;
+                db.collection('gymchats').doc(_gymChatActual).get().then(function(docChat){
+                    if(!docChat.exists) return;
+                    var miembros = docChat.data().miembros || [];
+                    var otroUid = miembros.filter(function(u){ return u !== miUid; })[0];
+                    var update = {};
+                    if(otroUid) update['noLeidos.' + otroUid] = firebase.firestore.FieldValue.increment(1);
+                    db.collection('gymchats').doc(_gymChatActual).set({
+                        ultimoMsg: { texto:'🤖 Rutina enviada', esRutina:true, ts: msg.timestamp }
+                    }, {merge:true}).then(function(){
+                        if(otroUid) db.collection('gymchats').doc(_gymChatActual).update(update);
+                    });
+                });
+                showToast('✅ Rutina enviada a tu compañero');
+            });
+        })
+        .catch(function(e){ showToast('⚠️ Error al generar rutina: ' + e.message); });
+    }
+
+    function gymChatCargarRutina(msgId, chatId){
+        // Cambiar texto del botón a "convirtiendo"
+        var btn = event && event.target ? event.target : null;
+        if(btn){ btn.textContent = '⏳ Convirtiendo...'; btn.disabled = true; }
+        showToast('⏳ Convirtiendo rutina a formato estructurado...');
+        db.collection('gymchats').doc(chatId).collection('mensajes').doc(msgId).get()
+        .then(function(doc){
+            if(!doc.exists){ showToast('⚠️ Mensaje no encontrado'); return; }
+            var textoRutina = doc.data().texto || '';
+            var apiKey = (typeof getFitBotKey === 'function') ? getFitBotKey() : localStorage.getItem('FITTRACK_ANTHROPIC_KEY');
+            if(!apiKey){ showToast('⚠️ Configura tu API key en Ajustes'); if(btn){ btn.textContent='💪 Cargar en mi Rutina Hoy'; btn.disabled=false; } return; }
+            // Pedir a la IA que convierta el texto en JSON estructurado (igual que ejecutarRutinaIA)
+            fetch('https://api.anthropic.com/v1/messages',{
+                method:'POST',
+                headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+                body:JSON.stringify({
+                    model:'claude-haiku-4-5',
+                    max_tokens:600,
+                    system:'Convierte la rutina de entrenamiento en JSON. Responde SOLO con JSON válido, sin texto extra, sin markdown. Formato exacto: {"tipoRutina":"Nombre","ejerciciosCompletos":[{"Ejercicio":"Nombre","Grupo Muscular":"Grupo","Series":"3","Reps":"8-12","Descanso":"60s"}]}',
+                    messages:[{role:'user', content:'Convierte esta rutina a JSON: ' + textoRutina.substring(0, 1500)}]
+                })
+            })
+            .then(function(r){return r.json();})
+            .then(function(data){
+                var jsonStr='';
+                if(data.content) data.content.forEach(function(b){if(b.type==='text') jsonStr+=b.text;});
+                if(data.error){ showToast('❌ ' + (data.error.message||'Error API')); if(btn){ btn.textContent='💪 Cargar en mi Rutina Hoy'; btn.disabled=false; } return; }
+                jsonStr = jsonStr.replace(/```json/g,'').replace(/```/g,'').trim();
+                var rutina = null;
+                try{ rutina = JSON.parse(jsonStr); } catch(e){
+                    var m = jsonStr.match(/\{[\s\S]*\}/);
+                    if(m){ try{ rutina = JSON.parse(m[0]); }catch(e2){} }
+                }
+                if(!rutina || !rutina.ejerciciosCompletos || !rutina.ejerciciosCompletos.length){
+                    showToast('❌ No se pudo convertir la rutina'); if(btn){ btn.textContent='💪 Cargar en mi Rutina Hoy'; btn.disabled=false; } return;
+                }
+                // Normalizar campos al formato exacto que espera renderCard
+                rutina.ejerciciosCompletos = rutina.ejerciciosCompletos.map(function(ex){
+                    return {
+                        'Ejercicio':      ex['Ejercicio']      || ex.nombre    || ex.name       || ex.ejercicio || 'Ejercicio',
+                        'Grupo Muscular': ex['Grupo Muscular'] || ex.grupo     || ex.musculo    || ex.muscle    || '',
+                        'Equipo':         ex['Equipo']         || ex.equipo    || ex.equipment  || '',
+                        'Series':         ex['Series']         || ex.series    || '3',
+                        'Reps':           ex['Reps']           || ex.reps      || ex.repeticiones || '10-12',
+                        'Duración':       ex['Duración']       || ex.duracion  || '',
+                        'Descanso':       ex['Descanso']       || ex.descanso  || '60s'
+                    };
+                });
+                if(!rutina.calentamiento)  rutina.calentamiento  = [];
+                if(!rutina.enfriamiento)   rutina.enfriamiento   = [];
+                if(!rutina.tipoRutina)     rutina.tipoRutina     = 'Rutina de compañero';
+                // Cerrar chat y navegar a view-rutina
+                gymChatCerrar();
+                showToast('💪 Cargando rutina en tu Rutina Hoy...');
+                setTimeout(function(){
+                    if(typeof showView === 'function'){
+                        showView('view-rutina');
+                        document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
+                        var navRutina = document.getElementById('nav-rutina');
+                        if(navRutina) navRutina.classList.add('active');
+                    }
+                    setTimeout(function(){
+                        if(typeof cargarRutinaFitBot === 'function'){
+                            cargarRutinaFitBot(rutina);
+                            showToast('✅ Rutina cargada: ' + (rutina.tipoRutina || 'Rutina de compañero'));
+                        } else {
+                            showToast('❌ Error: función cargarRutinaFitBot no disponible');
+                        }
+                    }, 300);
+                }, 200);
+            })
+            .catch(function(e){
+                showToast('❌ Sin conexión: ' + e.message);
+                if(btn){ btn.textContent='💪 Cargar en mi Rutina Hoy'; btn.disabled=false; }
+            });
+        })
+        .catch(function(e){ showToast('❌ Error: ' + e.message); });
+    }
+
+    function gymChatMostrarCodigo(){
+        document.getElementById('gymchat-modal-codigo').style.display = 'flex';
+    }
+
+    function gymChatCopiarCodigo(){
+        if(navigator.clipboard && _gymMiCodigo){
+            navigator.clipboard.writeText(_gymMiCodigo).then(function(){ showToast('📋 Código copiado'); });
+        }
+    }
+
+    function gymChatUnirse(){
+        gymChatMostrarCodigo();
+    }
+
+    function gymChatUsarCodigo(){
+        var input = document.getElementById('gymchat-input-codigo');
+        var codigo = (input.value||'').trim().toUpperCase();
+        if(!codigo || codigo.length < 6){ showToast('⚠️ Código inválido'); return; }
+        if(codigo === _gymMiCodigo){ showToast('⚠️ Ese es tu propio código'); return; }
+        showToast('🔍 Buscando compañero...');
+        // Buscar el usuario con ese código
+        db.collection('fittrack_usuarios').where('codigo','==',codigo).limit(1).get()
+        .then(function(snap){
+            if(snap.empty){ showToast('⚠️ Código no encontrado'); return; }
+            var otroUsuario = snap.docs[0].data();
+            var otroUid = otroUsuario.uid;
+            var miUid = window.FITTRACK_USER_ID;
+            var miNombre = localStorage.getItem('FITTRACK_USER_NAME') || 'Campeón';
+            // Verificar si ya existe chat entre estos dos
+            db.collection('gymchats')
+                .where('miembros','array-contains', miUid)
+                .get()
+                .then(function(chats){
+                    var yaExiste = false;
+                    chats.forEach(function(doc){
+                        var d = doc.data();
+                        if(d.miembros && d.miembros.indexOf(otroUid) !== -1) yaExiste = true;
+                    });
+                    if(yaExiste){ showToast('✅ Ya eres compañero de ' + otroUsuario.nombre); input.value = ''; document.getElementById('gymchat-modal-codigo').style.display = 'none'; return; }
+                    // Crear chat nuevo
+                    db.collection('gymchats').add({
+                        tipo: 'directo',
+                        miembros: [miUid, otroUid],
+                        nombres: [miNombre, otroUsuario.nombre],
+                        creadoEn: Date.now(),
+                        ultimoMsg: null
+                    }).then(function(){
+                        input.value = '';
+                        document.getElementById('gymchat-modal-codigo').style.display = 'none';
+                        showToast('💪 ¡Conectado con ' + otroUsuario.nombre + '!');
+                    });
+                });
+        })
+        .catch(function(e){ showToast('⚠️ Error: ' + e.message); });
+    }
+
 // ║  Generado desde FitTrack_Cerebro_Completo_Revisado_v2.xlsx      ║
 // ║  Fase 13: Integración completa Excel → HTML/JS                  ║
 // ╚══════════════════════════════════════════════════════════════════╝
@@ -2348,16 +2821,15 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             localStorage.setItem('FITTRACK_ALPHA_V2_STATE', JSON.stringify(state));
             // 2. Guardar en Firebase con debounce de 2 segundos
             clearTimeout(_saveFirebaseTimeout);
-            _saveFirebaseTimeout = setTimeout(async () => {
+            _saveFirebaseTimeout = setTimeout(function() {
                 if (window.fbSave) {
                     setFirebaseStatus('sync');
-                    await window.fbSave(state);
-                    setFirebaseStatus('ok');
+                    window.fbSave(state).then(function(){ setFirebaseStatus('ok'); }).catch(function(){ setFirebaseStatus('err'); });
                 }
             }, 2000);
         }
 
-        async function loadState() {
+        function loadState() {
             // 1. Cargar localStorage primero para mostrar app de inmediato
             const savedLocal = localStorage.getItem('FITTRACK_ALPHA_V2_STATE');
             if (savedLocal) {
@@ -2377,7 +2849,23 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             // 2. Intentar cargar desde Firebase en segundo plano
             if (window.fbLoad) {
                 try {
-                    const fbData = await window.fbLoad();
+                    window.fbLoad().then(function(fbData){
+                    if (fbData && fbData.workoutHistory) {
+                        var fbSessions = (fbData.workoutHistory||[]).length || 0;
+                        var localSessions = (state.workoutHistory||[]).length || 0;
+                        if (fbSessions > localSessions) {
+                            state = fbData;
+                            localStorage.setItem('FITTRACK_ALPHA_V2_STATE', JSON.stringify(state));
+                            applyTheme();
+                            renderDashboard();
+                            renderHistory();
+                            renderMeasurements();
+                            showToast('Datos sincronizados desde Firebase');
+                        }
+                    }
+                }).catch(function(e){
+                    console.warn('No se pudo cargar Firebase:', e.message);
+                });
                     if (fbData && fbData.workoutHistory) {
                         // Usar Firebase solo si tiene más datos que local
                         const fbSessions = fbData.workoutHistory?.length || 0;
@@ -2401,7 +2889,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
 
         function showToast(msg) {
             const t = document.createElement('div');
-            t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:10px 18px;border-radius:20px;font-size:0.78rem;font-weight:600;z-index:9999;white-space:nowrap;';
+            t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:rgb(var(--text-rgb));padding:10px 18px;border-radius:20px;font-size:0.78rem;font-weight:600;z-index:9999;white-space:nowrap;';
             t.textContent = msg;
             document.body.appendChild(t);
             setTimeout(() => t.remove(), 3000);
@@ -3062,16 +3550,22 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         }
 
         function cargarImagenManual(nombreEjercicio, exId) {
-            const url = prompt(`📷 Pega la URL de la imagen para:\n"${nombreEjercicio}"\n\nEjemplo: https://i.imgur.com/abc123.jpg`);
-            if (!url || !url.startsWith('http')) return;
-            if (!state.ejercicioImagenes) state.ejercicioImagenes = {};
-            state.ejercicioImagenes[nombreEjercicio] = url;
-            saveState();
-            // Actualizar imagen en pantalla
-            const img = document.getElementById(`img-${exId}`);
-            const fallback = document.getElementById(`img-fallback-${exId}`);
-            if (img) { img.src = url; img.style.display = 'block'; }
-            if (fallback) fallback.style.display = 'none';
+            showPromptModal(
+                'Imagen para: ' + nombreEjercicio,
+                'https://i.imgur.com/abc123.jpg',
+                (state.ejercicioImagenes && state.ejercicioImagenes[nombreEjercicio]) || '',
+                function(url) {
+                    if (!url || !url.startsWith('http')) { showToast('URL invalida'); return; }
+                    if (!state.ejercicioImagenes) state.ejercicioImagenes = {};
+                    state.ejercicioImagenes[nombreEjercicio] = url;
+                    saveState();
+                    var img = document.getElementById('img-' + exId);
+                    var fallback = document.getElementById('img-fallback-' + exId);
+                    if (img) { img.src = url; img.style.display = 'block'; }
+                    if (fallback) fallback.style.display = 'none';
+                    showToast('Imagen guardada');
+                }
+            );
         }
 
         function toggleTecnica(exId) {
@@ -3294,7 +3788,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             });
 
             if (!hasAtLeastOneSet) {
-                alert("Completa al menos una serie para poder finalizar tu sesión.");
+                showToast('Completa al menos una serie para poder finalizar tu sesión.');
                 return;
             }
 
@@ -3532,7 +4026,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                             </div>` : ''}
                         </div>
                         <button onclick="showView('view-fitbot');document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));document.getElementById('nav-fitbot')?.classList.add('active');"
-                            style="background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgb(var(--secondary-rgb)));color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;">
+                            style="background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgb(var(--secondary-rgb)));color:rgb(var(--text-rgb));border:none;border-radius:20px;padding:8px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;">
                             Entrenar →
                         </button>
                     </div>`;
@@ -3624,7 +4118,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             const cat = document.getElementById('custom-exercise-category').value;
 
             if (!name) {
-                alert("Por favor, ingresa el nombre de tu ejercicio.");
+                showToast('Por favor, ingresa el nombre de tu ejercicio.');
                 return;
             }
 
@@ -3637,7 +4131,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             document.getElementById('custom-exercise-name').value = '';
             toggleCustomExercisePanel();
             renderExercises();
-            alert(`"${name}" agregado a tu biblioteca.`);
+            showToast('"${name}" agregado a tu biblioteca.');
         }
 
         // ═══ EXPORTAR RUTINA ═══
@@ -3739,7 +4233,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 if (!btn) return;
                 if (t === tab) {
                     btn.style.background = 'rgb(var(--primary-rgb))';
-                    btn.style.color = '#fff';
+                    btn.style.color = 'rgb(var(--text-rgb))';
                     btn.style.borderColor = 'rgb(var(--primary-rgb))';
                 } else {
                     btn.style.background = 'transparent';
@@ -4260,7 +4754,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
 
         function saveMeasurements() {
             const peso   = parseFloat(document.getElementById('measure-weight').value);
-            if (!peso) { alert('El peso es obligatorio.'); return; }
+            if (!peso) { showToast('El peso es obligatorio.'); return; }
 
             const record = {
                 date:      new Date().toISOString().split('T')[0],
@@ -4535,7 +5029,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             const confirm = document.createElement('button');
             confirm.className = 'chat-option-btn';
             confirm.textContent = '✅ Confirmar selección';
-            confirm.style.cssText = 'width:100%;background:var(--accent,#3b82f6);color:white;font-weight:700;';
+            confirm.style.cssText = 'width:100%;background:var(--accent,#3b82f6);color:rgb(var(--text-rgb));font-weight:700;';
             confirm.onclick = () => {
                 if (multiSelectState.selected.size === 0) return;
                 handleChatDecision({ val: confirmVal, text: '✅ Selección confirmada', multi: Array.from(multiSelectState.selected) });
@@ -5375,14 +5869,189 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         });
     </script>
     <!-- ══ BOTÓN FLOTANTE FITBOT IA ══ -->
-    <button onclick="abrirFitBotIA()" style="position:fixed;bottom:90px;right:16px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.7));border:none;color:#fff;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(var(--primary-rgb),0.4);display:flex;align-items:center;justify-content:center;" title="FitBot IA">
-        💬
+    <button onclick="abrirFitBotIA()" style="position:fixed;bottom:90px;right:16px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.7));border:none;color:rgb(var(--text-rgb));font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(var(--primary-rgb),0.4);display:flex;align-items:center;justify-content:center;" title="FitBot IA">
+        🤖
     </button>
 
     <!-- ══ BOTÓN FLOTANTE SPOTIFY ══ -->
-    <button onclick="toggleSpotify()" id="spotify-fab" style="position:fixed;bottom:152px;right:16px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1DB954,#1aa34a);border:none;color:#fff;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(29,185,84,0.4);display:flex;align-items:center;justify-content:center;" title="Spotify">
+    <button onclick="toggleSpotify()" id="spotify-fab" style="position:fixed;bottom:152px;right:16px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1DB954,#1aa34a);border:none;color:rgb(var(--text-rgb));font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(29,185,84,0.4);display:flex;align-items:center;justify-content:center;" title="Spotify">
         🎵
     </button>
+
+    <!-- ══ BOTÓN FLOTANTE RADIO ══ -->
+    <button onclick="toggleRadio()" id="radio-fab" style="position:fixed;bottom:214px;right:16px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#e11d48,#be123c);border:none;color:rgb(var(--text-rgb));font-size:1.3rem;cursor:pointer;box-shadow:0 4px 20px rgba(225,29,72,0.4);display:flex;align-items:center;justify-content:center;" title="Radio Peruana">
+        📻
+    </button>
+
+    <!-- ══ MODAL RADIO ══ -->
+    <div id="radio-modal" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9997;padding:0 0 70px;">
+        <div style="background:rgb(var(--bg-rgb));border-radius:24px 24px 0 0;border:1px solid rgba(225,29,72,0.2);border-bottom:none;max-height:75vh;display:flex;flex-direction:column;">
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid rgba(var(--border-rgb),0.15);flex-shrink:0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:1.3rem;">📻</span>
+                    <div>
+                        <div style="font-weight:800;font-size:0.95rem;color:rgb(var(--text-rgb));">Radio Peruana</div>
+                        <div id="radio-status" style="font-size:0.65rem;color:#e11d48;font-weight:700;">Selecciona una emisora</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button onclick="radioStop()" id="radio-stop-btn" style="display:none;background:rgba(225,29,72,0.1);border:1px solid rgba(225,29,72,0.3);color:#e11d48;border-radius:20px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">⏹ Detener</button>
+                    <button onclick="toggleRadio()" style="background:rgba(var(--text-rgb),0.08);border:none;color:rgb(var(--text-muted-rgb));border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;">✕</button>
+                </div>
+            </div>
+            <!-- Lista de emisoras (generada dinámicamente) -->
+            <div id="radio-lista" style="overflow-y:auto;padding:10px 14px 16px;">
+                <div style="text-align:center;padding:20px;color:rgb(var(--text-muted-rgb));font-size:0.8rem;">⏳ Cargando emisoras...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estilos radio -->
+    <style>
+    .radio-item { display:flex;align-items:center;gap:12px;background:rgba(var(--text-rgb),0.04);border:1px solid rgba(var(--border-rgb),0.1);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all 0.15s; }
+    .radio-item:active { background:rgba(var(--primary-rgb),0.1); }
+    .radio-item.playing { background:rgba(225,29,72,0.08);border-color:rgba(225,29,72,0.3); }
+    .radio-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+    .radio-item.playing .radio-dot { animation:pulse-radio 1s infinite; }
+    .radio-name { font-size:0.85rem;font-weight:700;color:rgb(var(--text-rgb)); }
+    .radio-freq { font-size:0.68rem;color:rgb(var(--text-muted-rgb));margin-top:1px; }
+    @keyframes pulse-radio { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+    </style>
+
+    <script>
+    // ══ RADIO PERUANA — Radio Browser API ══
+    var radioAudio = null;
+    var radioCurrentItem = null;
+
+    var RADIOS_PERU = [
+        // Noticias
+        { id:'rpp',      nombre:'RPP Noticias',    freq:'89.5 FM',   categoria:'noticias',  color:'#e11d48', emoji:'📰', url:'https://mdstrm.com/audio/5fab3416b5f9ef165cfab6e9/icecast.audio' },
+        { id:'exitosa',  nombre:'Radio Exitosa',   freq:'95.5 FM',   categoria:'noticias',  color:'#f97316', emoji:'📣', url:'https://neptuno-2-audio.mediaserver.digital/79525baf-b0f5-4013-a8bd-3c5c293c6561' },
+        { id:'nacional', nombre:'Radio Nacional',  freq:'103.9 FM',  categoria:'noticias',  color:'#dc2626', emoji:'🏛️', url:'https://cdnhd.iblups.com/hls/0773874174fd4eba8bb9eff741d190dc.m3u8' },
+        // Pop
+        { id:'studio92', nombre:'Studio 92',       freq:'92.5 FM',   categoria:'pop',       color:'#8b5cf6', emoji:'🎵', url:'https://mdstrm.com/audio/5fada553978fe1080e3ac5ea/icecast.audio' },
+        { id:'planeta',  nombre:'Planeta 107.7',   freq:'107.7 FM',  categoria:'pop',       color:'#06b6d4', emoji:'🌍', url:'https://mdstrm.com/audio/6839e274f40e6b9832e37633/live.m3u8' },
+        { id:'oxigeno',  nombre:'Oxígeno',         freq:'102.1 FM',  categoria:'pop',       color:'#10b981', emoji:'🎸', url:'https://mdstrm.com/audio/5fab0687bcd6c2389ee9480c/icecast.audio' },
+        { id:'lazona',   nombre:'La Zona',         freq:'90.5 FM',   categoria:'pop',       color:'#f59e0b', emoji:'🎉', url:'https://mdstrm.com/audio/5fada54116646e098d97e6a5/icecast.audio' },
+        { id:'moda',     nombre:'Moda FM',         freq:'97.3 FM',   categoria:'pop',       color:'#ec4899', emoji:'🎧', url:'https://mdstrm.com/audio/6839e1c82cc4c480fcd318dd/live.m3u8' },
+        { id:'magica',   nombre:'Radio Mágica',    freq:'88.3 FM',   categoria:'pop',       color:'#a855f7', emoji:'✨', url:'https://mdstrm.com/audio/6839e28eb3fdc597ac2e2e43/live.m3u8' },
+        // Romántica
+        { id:'ritmo',    nombre:'Ritmo Romántica', freq:'93.1 FM',   categoria:'romantica', color:'#f43f5e', emoji:'💌', url:'https://mdstrm.com/audio/6839e2376607bdf6b2fcde27/icecast.audio' },
+        { id:'felicidad',nombre:'Felicidad FM',    freq:'88.9 FM',   categoria:'romantica', color:'#fb923c', emoji:'💕', url:'https://mdstrm.com/audio/5fad731fcf097a068af3c8f7/icecast.audio' },
+        // Variada
+        { id:'radiomar', nombre:'Radiomar Plus',   freq:'98.1 FM',   categoria:'variada',   color:'#f97316', emoji:'💃', url:'https://mdstrm.com/audio/6839e261d2efddf5bfbc2d3d/live.m3u8' },
+        { id:'karibena', nombre:'La Karibeña',     freq:'94.9 FM',   categoria:'variada',   color:'#10b981', emoji:'🌴', url:'https://iptv-pe-x-7-g3s-video.egostreaming.pe/karibenatv_685a-pe-a5676-584412/tracks-a1/mono.m3u8' },
+        { id:'nuevaq',   nombre:'Nueva Q FM',      freq:'107.1 FM',  categoria:'variada',   color:'#6366f1', emoji:'🥁', url:'https://mdstrm.com/audio/6839e1f153fcf56d988d5943/live.m3u8' },
+    ];
+
+    var radioHls = null;
+    var hlsJsLoaded = false;
+
+    function toggleRadio(){
+        var modal = document.getElementById('radio-modal');
+        if(!modal) return;
+        modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function _cargarHlsJS(cb){
+        if(hlsJsLoaded){ cb(); return; }
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js';
+        s.onload = function(){ hlsJsLoaded = true; cb(); };
+        s.onerror = function(){ cb(); };
+        document.head.appendChild(s);
+    }
+
+    function radioPlay(idx, item){
+        var radio = RADIOS_PERU[idx];
+        if(radioCurrentItem === item && radioAudio && !radioAudio.paused){ radioStop(); return; }
+        radioStop();
+        if(!radioAudio){
+            radioAudio = new Audio();
+            radioAudio.crossOrigin = 'anonymous';
+            radioAudio.volume = 0.8;
+        }
+        var url = radio.url;
+        var doPlay = function(){
+            radioCurrentItem = item;
+            item.classList.add('playing');
+            document.getElementById('radio-status').textContent = '🔴 EN VIVO · ' + radio.nombre;
+            document.getElementById('radio-stop-btn').style.display = 'block';
+            document.getElementById('radio-fab').style.background = 'linear-gradient(135deg,#dc2626,#991b1b)';
+            document.getElementById('radio-fab').textContent = '🔴';
+        };
+        var onError = function(){
+            showToast && showToast('⚠️ ' + radio.nombre + ' no disponible');
+            if(item) item.classList.remove('playing');
+            radioCurrentItem = null;
+            document.getElementById('radio-stop-btn').style.display = 'none';
+            document.getElementById('radio-status').textContent = 'Selecciona una emisora';
+            document.getElementById('radio-fab').style.background = 'linear-gradient(135deg,#e11d48,#be123c)';
+            document.getElementById('radio-fab').textContent = '📻';
+        };
+        if(url.indexOf('.m3u8') !== -1){
+            if(radioAudio.canPlayType('application/vnd.apple.mpegurl')){
+                radioAudio.src = url;
+                radioAudio.play().then(doPlay).catch(onError);
+            } else {
+                _cargarHlsJS(function(){
+                    if(window.Hls && Hls.isSupported()){
+                        if(radioHls){ try{ radioHls.destroy(); }catch(e){} }
+                        radioHls = new Hls();
+                        radioHls.loadSource(url);
+                        radioHls.attachMedia(radioAudio);
+                        radioHls.on(Hls.Events.MANIFEST_PARSED, function(){ radioAudio.play().then(doPlay).catch(onError); });
+                        radioHls.on(Hls.Events.ERROR, function(e, d){ if(d.fatal) onError(); });
+                    } else { onError(); }
+                });
+            }
+        } else {
+            radioAudio.src = url;
+            radioAudio.play().then(doPlay).catch(onError);
+            radioAudio.onerror = onError;
+        }
+    }
+
+    function radioStop(){
+        if(radioAudio){ try{ radioAudio.pause(); radioAudio.src = ''; }catch(e){} }
+        if(radioHls){ try{ radioHls.destroy(); }catch(e){} radioHls = null; }
+        if(radioCurrentItem) radioCurrentItem.classList.remove('playing');
+        radioCurrentItem = null;
+        var s = document.getElementById('radio-status');
+        var b = document.getElementById('radio-stop-btn');
+        var f = document.getElementById('radio-fab');
+        if(s) s.textContent = 'Selecciona una emisora';
+        if(b) b.style.display = 'none';
+        if(f){ f.style.background = 'linear-gradient(135deg,#e11d48,#be123c)'; f.textContent = '📻'; }
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        var container = document.getElementById('radio-lista');
+        if(!container) return;
+        var categorias = {
+            noticias:  { label:'📰 NOTICIAS', items:[] },
+            pop:       { label:'🎵 POP / INTERNACIONAL', items:[] },
+            romantica: { label:'💕 ROMÁNTICA', items:[] },
+            variada:   { label:'🎸 VARIADA', items:[] }
+        };
+        RADIOS_PERU.forEach(function(r, i){ categorias[r.categoria].items.push({r:r, i:i}); });
+        var html = '';
+        Object.values(categorias).forEach(function(cat){
+            if(!cat.items.length) return;
+            html += '<div style="font-size:0.65rem;font-weight:800;color:rgb(var(--text-muted-rgb));letter-spacing:1px;margin:12px 0 6px;">' + cat.label + '</div>';
+            html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+            cat.items.forEach(function(obj){
+                html += '<div class="radio-item" id="radio-item-' + obj.i + '" onclick="radioPlay(' + obj.i + ',this)">';
+                html += '<div class="radio-dot" style="background:' + obj.r.color + ';"></div>';
+                html += '<div><div class="radio-name">' + obj.r.emoji + ' ' + obj.r.nombre + '</div><div class="radio-freq">' + obj.r.freq + '</div></div>';
+                html += '</div>';
+            });
+            html += '</div>';
+        });
+        container.innerHTML = html;
+    });
+    </script>
 
     <!-- ══ MODAL SPOTIFY ══ -->
     <div id="spotify-modal" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;padding:0 0 70px;">
@@ -5535,19 +6204,18 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 console.log('appUrlOpen:', data.url);
                 try {
                     var url = new URL(data.url);
-                    var code = url.searchParams.get('code');
+                    var code  = url.searchParams.get('code');
                     var error = url.searchParams.get('error');
-                    if(error){
-                        showToast('⚠️ Spotify: ' + error);
-                        return;
-                    }
+                    if(error){ showToast('⚠️ Spotify: ' + error); return; }
                     if(code && localStorage.getItem('SPOTIFY_VERIFIER')){
+                        // Cerrar cualquier modal abierto para evitar conflictos
+                        var gymModal = document.getElementById('gymchat-modal');
+                        if(gymModal) gymModal.style.display = 'none';
                         spotifyExchangeCode(code);
-                        // Abrir modal
                         setTimeout(function(){
                             var modal = document.getElementById('spotify-modal');
                             if(modal) modal.style.display = 'block';
-                        }, 500);
+                        }, 1500);
                     }
                 } catch(e){ console.warn('appUrlOpen error:', e); }
             });
@@ -5577,13 +6245,27 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             if(!state) return;
             var track = state.track_window.current_track;
             if(track){
-                document.getElementById('spotify-track-name').textContent = track.name;
-                document.getElementById('spotify-artist-name').textContent = track.artists.map(function(a){ return a.name; }).join(', ');
-                var img = track.album.images[0];
-                if(img) document.getElementById('spotify-album-art').src = img.url;
+                var nombre  = track.name;
+                var artista = track.artists.map(function(a){ return a.name; }).join(', ');
+                var img     = track.album.images[0];
+                document.getElementById('spotify-track-name').textContent  = nombre;
+                document.getElementById('spotify-artist-name').textContent = artista;
+                if(img) document.getElementById('spotify-album-art').src   = img.url;
+                // Pastilla
+                var npName   = document.getElementById('np-track-name');
+                var npArtist = document.getElementById('np-artist-name');
+                var npArt    = document.getElementById('np-album-art');
+                if(npName)   npName.textContent   = nombre;
+                if(npArtist) npArtist.textContent = artista;
+                if(npArt && img) npArt.src        = img.url;
             }
             var playing = !state.paused;
             document.getElementById('spotify-play-btn').textContent = playing ? '⏸' : '▶';
+            var npBtn = document.getElementById('np-play-btn');
+            if(npBtn) npBtn.textContent = playing ? '⏸' : '▶';
+            // Mostrar/ocultar pastilla
+            var np = document.getElementById('spotify-now-playing');
+            if(np) np.style.display = (playing && track) ? 'flex' : 'none';
             var pct = state.duration ? (state.position / state.duration * 100) : 0;
             document.getElementById('spotify-progress-bar').style.width = pct + '%';
         });
@@ -5613,13 +6295,26 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         }).then(function(r){ if(r.status===200) return r.json(); })
         .then(function(data){
             if(data && data.item){
-                document.getElementById('spotify-track-name').textContent = data.item.name;
-                document.getElementById('spotify-artist-name').textContent = data.item.artists.map(function(a){ return a.name; }).join(', ');
-                var img = data.item.album.images[0];
-                if(img) document.getElementById('spotify-album-art').src = img.url;
+                var nombre  = data.item.name;
+                var artista = data.item.artists.map(function(a){ return a.name; }).join(', ');
+                var imgUrl  = data.item.album.images[0] ? data.item.album.images[0].url : '';
+                document.getElementById('spotify-track-name').textContent  = nombre;
+                document.getElementById('spotify-artist-name').textContent = artista;
+                if(imgUrl) document.getElementById('spotify-album-art').src = imgUrl;
                 var pct = data.item.duration_ms ? (data.progress_ms / data.item.duration_ms * 100) : 0;
                 document.getElementById('spotify-progress-bar').style.width = pct + '%';
                 document.getElementById('spotify-play-btn').textContent = data.is_playing ? '⏸' : '▶';
+                // Pastilla
+                var npName   = document.getElementById('np-track-name');
+                var npArtist = document.getElementById('np-artist-name');
+                var npArt    = document.getElementById('np-album-art');
+                var npBtn    = document.getElementById('np-play-btn');
+                var np       = document.getElementById('spotify-now-playing');
+                if(npName)   npName.textContent   = nombre;
+                if(npArtist) npArtist.textContent = artista;
+                if(npArt && imgUrl) npArt.src     = imgUrl;
+                if(npBtn)    npBtn.textContent     = data.is_playing ? '⏸' : '▶';
+                if(np)       np.style.display      = data.is_playing ? 'flex' : 'none';
             }
         }).catch(function(){});
     }
@@ -5697,7 +6392,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                     style="flex:1;background:rgba(var(--text-rgb),0.05);border:1px solid rgba(var(--border-rgb),0.15);border-radius:12px;padding:10px 12px;color:rgb(var(--text-rgb));font-family:inherit;font-size:0.85rem;outline:none;resize:none;max-height:80px;"
                     oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"
                     onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarFitBotIA();}"></textarea>
-                <button onclick="enviarFitBotIA()" style="background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.7));border:none;color:#fff;border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer;flex-shrink:0;font-size:1rem;">➤</button>
+                <button onclick="enviarFitBotIA()" style="background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.7));border:none;color:rgb(var(--text-rgb));border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer;flex-shrink:0;font-size:1rem;">➤</button>
             </div>
         </div>
     </div>
@@ -5766,7 +6461,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             var esRutina = /series|reps|repeticiones|ejercicio|minutos|descanso|rutina/i.test(resp);
             var btnEjecutar = esRutina ? `
                 <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                    <button onclick="ejecutarRutinaIA('${loadId}')" style="background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.7));border:none;color:#fff;border-radius:10px;padding:8px 14px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                    <button onclick="ejecutarRutinaIA('${loadId}')" style="background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.7));border:none;color:rgb(var(--text-rgb));border-radius:10px;padding:8px 14px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">
                         ▶️ Ejecutar rutina hoy
                     </button>
                 </div>` : '';
@@ -5884,7 +6579,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
     function completarOnboarding(){
         var nombre = (document.getElementById('onboarding-nombre').value || '').trim();
         var key    = (document.getElementById('onboarding-apikey').value || '').trim();
-        if(!nombre){ alert('Por favor ingresa tu nombre 😊'); return; }
+        if(!nombre){ showToast('Por favor ingresa tu nombre 😊'); return; }
         localStorage.setItem('FITTRACK_NOMBRE', nombre);
         if(key) localStorage.setItem('FITTRACK_ANTHROPIC_KEY', key);
         localStorage.setItem('FITTRACK_ONBOARDING_OK', '1');
@@ -5917,7 +6612,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         showToast('✅ API Key guardada correctamente');
     }
     function borrarApiKey(){
-        if(!confirm('¿Eliminar la API Key guardada?')) return;
+        showModalConfirm('¿Eliminar la API Key guardada?', borrarApiKeyConfirmado, {confirmText:'Eliminar', danger:true}); return;
         localStorage.removeItem('FITTRACK_ANTHROPIC_KEY');
         actualizarConfigUI();
         showToast('🗑️ API Key eliminada');
@@ -5984,7 +6679,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
     }
 
     function cerrarSesion(){
-        if(!confirm('¿Cerrar sesión?')) return;
+        showModalConfirm('¿Cerrar sesion?', cerrarSesionConfirmada, {confirmText:'Cerrar sesion', danger:true}); return;
         if(fbAuth) fbAuth.signOut().then(function(){
             localStorage.removeItem('FITTRACK_USER_ID');
             localStorage.removeItem('FITTRACK_USER_NAME');
@@ -6017,5 +6712,101 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
 
     function guardarRutinaIA(msgId){} // legacy — ya no se usa
     </script>
+
+    <!-- Modal Genérico (showModalConfirm / showPromptModal) -->
+    <div id="generic-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:10501;align-items:center;justify-content:center;padding:20px;">
+        <div style="background:rgba(var(--card-bg-rgb),0.95);border:1px solid rgba(var(--primary-rgb),0.25);border-radius:20px;padding:24px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,0.5);">
+            <div id="generic-modal-title" style="font-family:'Outfit',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:14px;">Confirmacion</div>
+            <div id="generic-modal-body" style="font-size:0.88rem;color:rgb(var(--text-muted-rgb));line-height:1.55;margin-bottom:18px;">Estas seguro?</div>
+            <input type="text" id="generic-modal-input" style="display:none;width:100%;background:rgba(var(--bg-rgb),0.6);border:1px solid rgba(var(--border-rgb),0.15);color:rgb(var(--text-rgb));padding:12px 14px;border-radius:12px;font-size:0.9rem;outline:none;margin-bottom:14px;font-family:'Outfit',sans-serif;">
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button id="generic-modal-cancel" onclick="closeGenericModal()" style="padding:10px 18px;border-radius:12px;font-size:0.82rem;font-weight:600;cursor:pointer;border:none;font-family:'Outfit',sans-serif;background:rgba(var(--text-rgb),0.08);color:rgb(var(--text-rgb));">Cancelar</button>
+                <button id="generic-modal-confirm" onclick="confirmGenericModal()" style="padding:10px 18px;border-radius:12px;font-size:0.82rem;font-weight:600;cursor:pointer;border:none;font-family:'Outfit',sans-serif;background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.85));color:rgb(var(--text-rgb));">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Helpers de modales propios (reemplazan alert/prompt/confirm nativos)
+    var _modalConfirmCallback = null;
+    function showModalConfirm(message, callback, opts){
+        opts = opts || {};
+        var title = opts.title || 'Confirmacion';
+        var confirmText = opts.confirmText || 'Aceptar';
+        var danger = opts.danger || false;
+        _modalConfirmCallback = callback;
+        var gm = document.getElementById('generic-modal');
+        if(!gm){ showToast(message); if(callback) setTimeout(callback, 100); return; }
+        document.getElementById('generic-modal-title').textContent = title;
+        document.getElementById('generic-modal-body').textContent = message;
+        document.getElementById('generic-modal-input').style.display = 'none';
+        var btn = document.getElementById('generic-modal-confirm');
+        btn.textContent = confirmText;
+        btn.style.background = danger
+            ? 'linear-gradient(135deg,rgb(var(--accent-rgb)),rgba(var(--accent-rgb),0.85))'
+            : 'linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.85))';
+        gm.style.display = 'flex';
+    }
+    function closeGenericModal(){
+        var gm = document.getElementById('generic-modal');
+        if(gm) gm.style.display = 'none';
+        _modalConfirmCallback = null;
+    }
+    function confirmGenericModal(){
+        var gm = document.getElementById('generic-modal');
+        if(gm) gm.style.display = 'none';
+        if(_modalConfirmCallback){ _modalConfirmCallback(); _modalConfirmCallback = null; }
+    }
+    function showPromptModal(title, placeholder, defaultValue, callback){
+        var gm = document.getElementById('generic-modal');
+        if(!gm){ var v = prompt(title, defaultValue); if(callback && v) callback(v); return; }
+        document.getElementById('generic-modal-title').textContent = title;
+        document.getElementById('generic-modal-body').textContent = '';
+        var input = document.getElementById('generic-modal-input');
+        input.style.display = 'block';
+        input.placeholder = placeholder || '';
+        input.value = defaultValue || '';
+        var btn = document.getElementById('generic-modal-confirm');
+        btn.textContent = 'Guardar';
+        btn.style.background = 'linear-gradient(135deg,rgb(var(--primary-rgb)),rgba(var(--primary-rgb),0.85))';
+        _modalConfirmCallback = function(){
+            var val = document.getElementById('generic-modal-input').value;
+            if(callback) callback(val);
+        };
+        gm.style.display = 'flex';
+        setTimeout(function(){ input.focus(); }, 100);
+    }
+    // Callbacks para borrarApiKey y cerrarSesion
+    function borrarApiKeyConfirmado(){
+        localStorage.removeItem('FITTRACK_ANTHROPIC_KEY');
+        var inp = document.getElementById('fittrack-api-key-input');
+        if(inp) inp.value = '';
+        showToast('API Key eliminada');
+    }
+    function cerrarSesionConfirmada(){
+        if(typeof fbAuth !== 'undefined' && fbAuth){
+            fbAuth.signOut().then(function(){
+                localStorage.removeItem('FITTRACK_USER_ID');
+                localStorage.removeItem('FITTRACK_USER_NAME');
+                localStorage.removeItem('FITTRACK_ONBOARDING_OK');
+                if(typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.GoogleAuth){
+                    Capacitor.Plugins.GoogleAuth.signOut().catch(function(){});
+                }
+                window.location.reload();
+            });
+        }
+    }
+    // Cerrar modal al tocar fuera
+    if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', function(){
+            var gm = document.getElementById('generic-modal');
+            if(gm) gm.addEventListener('click', function(e){ if(e.target === gm) closeGenericModal(); });
+        });
+    } else {
+        var gm = document.getElementById('generic-modal');
+        if(gm) gm.addEventListener('click', function(e){ if(e.target === gm) closeGenericModal(); });
+    }
+    </script>
+
 </body>
 </html>
