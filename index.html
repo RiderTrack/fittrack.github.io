@@ -7434,15 +7434,15 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         var btn = el ? el.querySelector('button') : null;
         if(btn){ btn.textContent = '⏳ Convirtiendo...'; btn.disabled = true; }
 
-        // Pedir a la IA que convierta el texto en JSON estructurado
+        // Pedir a la IA que convierta el texto en JSON estructurado (con calentamiento y enfriamiento)
         fetch('https://api.anthropic.com/v1/messages',{
             method:'POST',
             headers:{'Content-Type':'application/json','x-api-key':getFitBotKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
             body:JSON.stringify({
                 model:'claude-haiku-4-5',
-                max_tokens:600,
-                system:'Convierte la rutina de entrenamiento en JSON. Responde SOLO con JSON válido, sin texto extra, sin markdown. Formato exacto: {"tipoRutina":"Nombre","ejerciciosCompletos":[{"Ejercicio":"Nombre","Grupo Muscular":"Grupo","Series":"3","Reps":"8-12","Descanso":"60s"}]}',
-                messages:[{role:'user', content:'Convierte esta rutina a JSON: ' + texto.substring(0, 1500)}]
+                max_tokens:1500,
+                system:'Convierte la rutina de entrenamiento en JSON. Responde SOLO con JSON válido, sin texto extra, sin markdown. Incluye TODAS las secciones que aparezcan en la rutina (calentamiento, ejercicios principales/auxiliares y enfriamiento/estiramientos). Si una sección no existe en el texto, devuélvela como array vacío. Formato exacto: {"tipoRutina":"Nombre","calentamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Calentamiento","Series":"1","Reps":"5 min","Descanso":"30s"}],"ejerciciosCompletos":[{"Ejercicio":"Nombre","Grupo Muscular":"Grupo","Series":"3","Reps":"8-12","Descanso":"60s"}],"enfriamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Enfriamiento","Series":"1","Reps":"30s","Descanso":"20s"}]}',
+                messages:[{role:'user', content:'Convierte esta rutina a JSON: ' + texto.substring(0, 5000)}]
             })
         })
         .then(function(r){return r.json();})
@@ -7470,7 +7470,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             }
 
             // Normalizar campos al formato exacto que espera renderCard
-            rutina.ejerciciosCompletos = rutina.ejerciciosCompletos.map(function(ex){
+            var _normalizarEj = function(ex){
                 return {
                     'Ejercicio':      ex['Ejercicio']      || ex.nombre    || ex.name       || ex.ejercicio || 'Ejercicio',
                     'Grupo Muscular': ex['Grupo Muscular'] || ex.grupo     || ex.musculo    || ex.muscle    || '',
@@ -7480,11 +7480,12 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                     'Duración':       ex['Duración']       || ex.duracion  || '',
                     'Descanso':       ex['Descanso']       || ex.descanso  || '60s'
                 };
-            });
+            };
+            rutina.ejerciciosCompletos = rutina.ejerciciosCompletos.map(_normalizarEj);
 
-            // Asegurar campos requeridos por cargarRutinaFitBot
-            if(!rutina.calentamiento)  rutina.calentamiento  = [];
-            if(!rutina.enfriamiento)   rutina.enfriamiento   = [];
+            // Calentamiento y enfriamiento: normalizarlos si vienen, no borrarlos
+            rutina.calentamiento = Array.isArray(rutina.calentamiento) ? rutina.calentamiento.map(_normalizarEj) : [];
+            rutina.enfriamiento  = Array.isArray(rutina.enfriamiento)  ? rutina.enfriamiento.map(_normalizarEj)  : [];
             if(!rutina.tipoRutina)     rutina.tipoRutina     = 'Rutina IA';
 
             // Cargar en Rutina de Hoy usando cargarRutinaFitBot
