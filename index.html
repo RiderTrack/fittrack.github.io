@@ -3761,6 +3761,60 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         }
 
         function cargarImagenManual(nombreEjercicio, exId) {
+            // Con Storage disponible: subir imagen desde el teléfono (sin comprimir).
+            // Fallback: si Storage no está listo, usar el modal de URL como antes.
+            if (typeof firebase !== 'undefined' && firebase.storage) {
+                window._imgEjercicioPendiente = { nombre: nombreEjercicio, exId: exId };
+                var input = document.getElementById('img-ejercicio-input');
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.id = 'img-ejercicio-input';
+                    input.style.display = 'none';
+                    input.onchange = function() { _subirImagenEjercicio(this); };
+                    document.body.appendChild(input);
+                }
+                input.click();
+                return;
+            }
+            _cargarImagenPorURL(nombreEjercicio, exId);
+        }
+
+        function _subirImagenEjercicio(input) {
+            var pend = window._imgEjercicioPendiente;
+            var file = input.files && input.files[0];
+            input.value = '';
+            if (!file || !pend) return;
+            if (file.size > 8 * 1024 * 1024) {
+                showToast('⚠️ Imagen muy pesada (máx 8MB). Elige otra.');
+                return;
+            }
+            showToast('⏳ Subiendo imagen...');
+            var uid = window.FITTRACK_USER_ID || 'rudy';
+            // Nombre de archivo seguro a partir del ejercicio
+            var slug = pend.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            var ext = (file.name.match(/\.(\w+)$/) || [0, 'jpg'])[1].toLowerCase();
+            var ruta = 'ejercicios/' + uid + '/' + slug + '.' + ext;
+            // Subida directa SIN compresión (cuenta Blaze)
+            firebase.storage().ref(ruta).put(file).then(function(snap) {
+                return snap.ref.getDownloadURL();
+            }).then(function(url) {
+                if (!state.ejercicioImagenes) state.ejercicioImagenes = {};
+                state.ejercicioImagenes[pend.nombre] = url;
+                saveState();
+                var img = document.getElementById('img-' + pend.exId);
+                var fallback = document.getElementById('img-fallback-' + pend.exId);
+                if (img) { img.src = url; img.style.display = 'block'; }
+                if (fallback) fallback.style.display = 'none';
+                showToast('✅ Imagen subida y guardada');
+            }).catch(function(e) {
+                showToast('⚠️ Error subiendo: ' + (e.message || e));
+            });
+        }
+
+        function _cargarImagenPorURL(nombreEjercicio, exId) {
             showPromptModal(
                 'Imagen para: ' + nombreEjercicio,
                 'https://i.imgur.com/abc123.jpg',
