@@ -95,7 +95,10 @@
         _s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js';
         var _s3 = document.createElement('script');
         _s3.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js';
-        _s3.onload = function(){ setTimeout(initFirebase, 500); };
+        var _s4 = document.createElement('script');
+        _s4.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js';
+        _s3.onload = function(){ document.head.appendChild(_s4); };
+        _s4.onload = function(){ setTimeout(initFirebase, 500); };
         _s1.onload = function(){ document.head.appendChild(_s2); };
         _s2.onload = function(){ document.head.appendChild(_s3); };
         document.head.appendChild(_s1);
@@ -1381,6 +1384,38 @@
                 <div id="db-minigraf" style="display:flex;align-items:flex-end;gap:6px;height:50px;"></div>
                 <div id="db-minigraf-labels" style="display:flex;gap:6px;margin-top:4px;font-size:0.6rem;color:rgb(var(--text-muted-rgb));"></div>
             </div>
+
+            <!-- ===== NIVEL 1: Banner Modo Retorno ===== -->
+            <div class="db-card glass-card db-card-large" id="db-retorno-banner" style="display:none;"></div>
+
+            <!-- ===== NIVEL 1: Calendario heatmap tipo GitHub ===== -->
+            <div class="db-card glass-card db-card-large" id="db-heatmap-container">
+                <span class="db-card-title" style="margin-bottom:8px;display:block;">🗓️ Constancia (últimas 15 semanas)</span>
+                <div id="db-heatmap" style="display:flex;gap:3px;overflow-x:auto;padding-bottom:4px;"></div>
+                <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-top:6px;font-size:0.6rem;color:rgb(var(--text-muted-rgb));">
+                    <span>Menos</span>
+                    <span style="width:10px;height:10px;border-radius:2px;background:rgba(var(--border-rgb),0.15);display:inline-block;"></span>
+                    <span style="width:10px;height:10px;border-radius:2px;background:rgba(var(--primary-rgb),0.35);display:inline-block;"></span>
+                    <span style="width:10px;height:10px;border-radius:2px;background:rgba(var(--primary-rgb),0.65);display:inline-block;"></span>
+                    <span style="width:10px;height:10px;border-radius:2px;background:rgb(var(--primary-rgb));display:inline-block;"></span>
+                    <span>Más</span>
+                </div>
+            </div>
+
+            <!-- ===== NIVEL 1: Gráfico de progreso semanal (SVG) ===== -->
+            <div class="db-card glass-card db-card-large" id="db-progreso-container" style="display:none;">
+                <span class="db-card-title" style="margin-bottom:8px;display:block;">📊 Volumen por semana (kg)</span>
+                <div id="db-progreso-svg"></div>
+            </div>
+
+            <!-- ===== NIVEL 3: Resumen semanal ===== -->
+            <div class="db-card glass-card db-card-large" id="db-resumen-semanal" style="display:none;"></div>
+
+            <!-- ===== NIVEL 3: Logros ===== -->
+            <div class="db-card glass-card db-card-large" id="db-logros-container">
+                <span class="db-card-title" style="margin-bottom:8px;display:block;">🏆 Logros</span>
+                <div id="db-logros" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;"></div>
+            </div>
         </div>
     </div>
 
@@ -1525,7 +1560,10 @@
 
     <!-- ===== HISTORIAL ===== -->
     <div class="view-container" id="view-historial">
-        <div class="section-title">📈 <span>Historial de Sesiones</span></div>
+        <div class="flex-between mb-4">
+            <div class="section-title">📈 <span>Historial de Sesiones</span></div>
+            <button onclick="exportarExcel()" style="background:linear-gradient(135deg,#217346,#2e9e5b);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;">📊 Excel</button>
+        </div>
         <div class="history-list" id="history-container">
             <!-- Tarjetas de historial -->
         </div>
@@ -1534,6 +1572,41 @@
     <!-- ===== MEDIDAS ===== -->
     <div class="view-container" id="view-medidas">
         <div class="section-title">📏 <span>Medidas de Rudy</span></div>
+
+        <!-- ===== NIVEL 1: Registro rápido de peso + gráfico con tendencia ===== -->
+        <div class="glass-card" style="padding:14px 16px;margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+                <span style="font-weight:700;font-size:0.85rem;">⚡ Peso rápido de hoy</span>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="number" id="peso-rapido-input" step="0.1" placeholder="kg" inputmode="decimal"
+                        style="width:80px;padding:8px 10px;border-radius:10px;border:1px solid rgba(var(--border-rgb),0.3);background:rgba(var(--border-rgb),0.08);color:rgb(var(--text-rgb));font-size:0.9rem;font-weight:700;text-align:center;">
+                    <button onclick="registrarPesoRapido()"
+                        style="background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgb(var(--secondary-rgb)));color:rgb(var(--text-rgb));border:none;border-radius:10px;padding:8px 14px;font-size:0.8rem;font-weight:700;cursor:pointer;">Guardar</button>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card" id="grafico-peso-container" style="padding:14px 16px;margin-bottom:12px;display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-weight:700;font-size:0.85rem;">⚖️ Evolución del peso</span>
+                <span id="grafico-peso-tendencia" style="font-size:0.72rem;font-weight:700;"></span>
+            </div>
+            <div id="grafico-peso-svg"></div>
+        </div>
+
+        <!-- ===== NIVEL 3: Fotos de progreso (Firebase Storage) ===== -->
+        <div class="glass-card" style="padding:14px 16px;margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:700;font-size:0.85rem;">📸 Fotos de progreso</span>
+                <button onclick="document.getElementById('foto-progreso-input').click()"
+                    style="background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgb(var(--secondary-rgb)));color:rgb(var(--text-rgb));border:none;border-radius:10px;padding:7px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;">+ Foto</button>
+                <input type="file" id="foto-progreso-input" accept="image/*" capture="environment" style="display:none;" onchange="subirFotoProgreso(this)">
+            </div>
+            <div id="foto-progreso-status" style="display:none;font-size:0.75rem;color:rgb(var(--text-muted-rgb));text-align:center;padding:6px;">⏳ Subiendo foto...</div>
+            <div id="foto-comparador" style="display:none;margin-bottom:10px;"></div>
+            <div id="foto-galeria" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
+                <span style="font-size:0.75rem;color:rgb(var(--text-muted-rgb));">Toma una foto mensual y compara tu evolución.</span>
+            </div>
+        </div>
 
         <div class="measure-grid">
             <div class="measure-input-card glass-card">
@@ -1634,6 +1707,18 @@
         <div class="flex-between mb-4">
             <div class="section-title">⚙️ <span>Ajustes</span></div>
             <button class="close-btn" onclick="showView('view-dashboard')">✕</button>
+        </div>
+
+        <!-- ===== NIVEL 3: Recordatorio de entrenamiento ===== -->
+        <div class="glass-card studio-section" style="margin-bottom:14px;">
+            <div class="studio-title">⏰ Recordatorio de entrenamiento</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <input type="time" id="recordatorio-hora" value="18:00"
+                    style="padding:9px 12px;border-radius:10px;border:1px solid rgba(var(--border-rgb),0.3);background:rgba(var(--border-rgb),0.08);color:rgb(var(--text-rgb));font-size:0.9rem;font-weight:700;">
+                <button id="recordatorio-btn" onclick="toggleRecordatorio()"
+                    style="flex:1;min-width:130px;background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgb(var(--secondary-rgb)));color:rgb(var(--text-rgb));border:none;border-radius:10px;padding:9px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;">🔔 Activar</button>
+            </div>
+            <div id="recordatorio-estado" style="font-size:0.72rem;color:rgb(var(--text-muted-rgb));margin-top:8px;"></div>
         </div>
 
         <!-- Ajustes de cuenta -->
@@ -2846,6 +2931,10 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             renderMeasurements();
             initFitBot();
 
+            // NIVEL 3: UI del recordatorio + otorgar logros retroactivos sin spam de toasts
+            initRecordatorioUI();
+            verificarLogros(true);
+
             // 2. Intentar cargar desde Firebase en segundo plano
             if (window.fbLoad) {
                 try {
@@ -3406,10 +3495,24 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                         </div>
                     </div>
                     <div class="exercise-body">
+                        ${(() => {
+                            // NIVEL 2: última vez que se hizo este ejercicio
+                            const uv = getUltimaVez(ex.name);
+                            return uv ? `<div style="font-size:0.72rem;color:rgb(var(--text-muted-rgb));margin-bottom:8px;background:rgba(var(--border-rgb),0.08);border-radius:8px;padding:6px 10px;">🕐 Última vez (${uv.fecha}): <strong style="color:rgb(var(--primary-rgb));">${uv.resumen}</strong></div>` : '';
+                        })()}
+                        ${(() => {
+                            // NIVEL 2: nota guardada del ejercicio
+                            const nota = (state.notasEjercicio || {})[ex.name];
+                            return nota ? `<div id="nota-ej-${ex.id}" style="font-size:0.72rem;color:#fbbf24;margin-bottom:8px;background:rgba(251,191,36,0.08);border-radius:8px;padding:6px 10px;">📝 ${nota}</div>` : `<div id="nota-ej-${ex.id}"></div>`;
+                        })()}
                         ${rowsHtml}
                         <div class="exercise-summary-bar">
                             <span>Volumen: <strong id="volume-${ex.id}">0</strong> kg</span>
                             <span>Estimado 1RM: <strong id="est1rm-${ex.id}">0</strong> kg</span>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:8px;">
+                            <button onclick="editarNotaEjercicio('${ex.name.replace(/'/g, "\\'")}', '${ex.id}')" style="flex:1;background:rgba(var(--border-rgb),0.12);color:rgb(var(--text-rgb));border:none;border-radius:10px;padding:8px;font-size:0.72rem;font-weight:700;cursor:pointer;">📝 Nota</button>
+                            <button onclick="abrirCalcDiscos('${ex.id}')" style="flex:1;background:rgba(var(--border-rgb),0.12);color:rgb(var(--text-rgb));border:none;border-radius:10px;padding:8px;font-size:0.72rem;font-weight:700;cursor:pointer;">🧮 Discos</button>
                         </div>
                     </div>`;
                 container.appendChild(exerciseCard);
@@ -3423,6 +3526,114 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             } else {
                 el.classList.add('expanded');
             }
+        }
+
+        // ============================================================
+        // ===== NIVEL 2: ÚLTIMA VEZ + NOTAS + CALCULADORA DE DISCOS ===
+        // ============================================================
+
+        // ── Última sesión donde se hizo este ejercicio ──
+        function getUltimaVez(nombre) {
+            const hist = state.workoutHistory || [];
+            for (let i = 0; i < hist.length; i++) {
+                const sesion = hist[i];
+                const ex = (sesion.exercises || []).find(function(e) {
+                    return e.name && e.name.toLowerCase() === nombre.toLowerCase();
+                });
+                if (ex && ex.sets && ex.sets.length > 0) {
+                    const mejorSet = ex.sets.reduce(function(a, b) { return (b.weight || 0) > (a.weight || 0) ? b : a; });
+                    return {
+                        fecha: sesion.date,
+                        resumen: ex.sets.length + '×' + (mejorSet.reps || '?') + ' · ' + (mejorSet.weight || 0) + ' kg'
+                    };
+                }
+            }
+            return null;
+        }
+
+        // ── Notas por ejercicio (persistentes) ──
+        function editarNotaEjercicio(nombre, exId) {
+            if (!state.notasEjercicio) state.notasEjercicio = {};
+            const actual = state.notasEjercicio[nombre] || '';
+            showPromptModal('📝 Nota para ' + nombre, 'Ej: usar la máquina 5, agarre cerrado...', actual, function(val) {
+                if (val && val.trim()) {
+                    state.notasEjercicio[nombre] = val.trim();
+                    showToast('📝 Nota guardada');
+                } else {
+                    delete state.notasEjercicio[nombre];
+                }
+                saveState();
+                // Actualizar la nota visible sin re-render completo
+                const notaEl = document.getElementById('nota-ej-' + exId);
+                if (notaEl) {
+                    const nota = state.notasEjercicio[nombre];
+                    if (nota) {
+                        notaEl.style.cssText = 'font-size:0.72rem;color:#fbbf24;margin-bottom:8px;background:rgba(251,191,36,0.08);border-radius:8px;padding:6px 10px;';
+                        notaEl.textContent = '📝 ' + nota;
+                    } else {
+                        notaEl.style.cssText = '';
+                        notaEl.textContent = '';
+                    }
+                }
+            });
+        }
+
+        // ── Calculadora de discos ──
+        function abrirCalcDiscos(exId) {
+            // Tomar el peso de la primera serie como valor inicial
+            let pesoInicial = '';
+            const input1 = document.getElementById('weight-' + exId + '-1');
+            if (input1 && input1.value) pesoInicial = input1.value;
+            const modal = document.getElementById('calc-discos-modal');
+            if (!modal) return;
+            document.getElementById('calc-discos-peso').value = pesoInicial;
+            modal.style.display = 'flex';
+            calcularDiscos();
+            setTimeout(function() { document.getElementById('calc-discos-peso').focus(); }, 100);
+        }
+
+        function cerrarCalcDiscos() {
+            const modal = document.getElementById('calc-discos-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function calcularDiscos() {
+            const total = parseFloat(document.getElementById('calc-discos-peso').value) || 0;
+            const barra = parseFloat(document.getElementById('calc-discos-barra').value) || 20;
+            const res = document.getElementById('calc-discos-resultado');
+            if (total <= barra) {
+                res.innerHTML = total > 0
+                    ? '<div style="text-align:center;font-size:0.8rem;color:rgb(var(--text-muted-rgb));padding:10px;">Solo la barra (' + barra + ' kg) ya alcanza o supera ese peso 💪</div>'
+                    : '<div style="text-align:center;font-size:0.8rem;color:rgb(var(--text-muted-rgb));padding:10px;">Ingresa el peso total que quieres levantar</div>';
+                return;
+            }
+            let porLado = (total - barra) / 2;
+            const discos = [25, 20, 15, 10, 5, 2.5, 1.25];
+            const usados = [];
+            let restante = porLado;
+            discos.forEach(function(d) {
+                while (restante >= d - 0.001) { usados.push(d); restante -= d; }
+            });
+            const colores = { 25: '#ef4444', 20: '#3b82f6', 15: '#fbbf24', 10: '#4ade80', 5: '#f8fafc', 2.5: '#0f0f0f', 1.25: '#94a3b8' };
+            let html = '<div style="text-align:center;margin-bottom:10px;"><span style="font-size:0.75rem;color:rgb(var(--text-muted-rgb));">Por cada lado:</span></div>';
+            html += '<div style="display:flex;justify-content:center;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:10px;">';
+            if (usados.length === 0) {
+                html += '<span style="font-size:0.8rem;color:rgb(var(--text-muted-rgb));">Sin discos</span>';
+            } else {
+                usados.forEach(function(d) {
+                    const alto = 28 + (d / 25) * 32;
+                    const borde = d === 2.5 ? 'border:1px solid rgba(255,255,255,0.3);' : '';
+                    html += '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">' +
+                        '<div style="width:14px;height:' + alto + 'px;background:' + (colores[d] || '#888') + ';border-radius:4px;' + borde + '"></div>' +
+                        '<span style="font-size:0.6rem;font-weight:700;">' + d + '</span></div>';
+                });
+            }
+            html += '</div>';
+            const cargado = barra + (porLado - restante) * 2;
+            html += '<div style="text-align:center;font-size:0.8rem;">Total cargado: <strong style="color:rgb(var(--primary-rgb));">' + cargado.toFixed(2).replace(/\.?0+$/, '') + ' kg</strong>';
+            if (restante > 0.01) html += ' <span style="color:#fbbf24;">(faltan ' + (restante * 2).toFixed(2).replace(/\.?0+$/, '') + ' kg — no hay discos tan chicos)</span>';
+            html += '</div>';
+            res.innerHTML = html;
         }
 
         // ═══ DICCIONARIO DE IMÁGENES POR EJERCICIO ═══
@@ -3820,6 +4031,9 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             triggerBeep(520, 0.4);
             triggerVibration([200, 100, 200]);
 
+            // NIVEL 3: verificar logros desbloqueados con esta sesión
+            setTimeout(function() { verificarLogros(false); }, 1200);
+
             // Mostrar pantalla de feedback
             mostrarPantallaFinal(sessionResult, completedWorkoutsList, sessionVolume);
         }
@@ -3979,6 +4193,658 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         }
 
         // ===== DASHBOARD GENERATOR =====
+        // ============================================================
+        // ===== NIVEL 1: HEATMAP + GRÁFICOS + PESO + MODO RETORNO =====
+        // ============================================================
+
+        // ── 1. Calendario heatmap tipo GitHub (últimas 15 semanas) ──
+        function renderHeatmap() {
+            const cont = document.getElementById('db-heatmap');
+            if (!cont) return;
+            // Contar sesiones por fecha
+            const porDia = {};
+            (state.workoutHistory || []).forEach(function(s) {
+                if (s.date) porDia[s.date] = (porDia[s.date] || 0) + 1;
+            });
+            const hoy = new Date();
+            // Empezar en el domingo de hace 14 semanas
+            const inicio = new Date(hoy);
+            inicio.setDate(inicio.getDate() - inicio.getDay() - 14 * 7);
+            const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            let html = '';
+            for (let w = 0; w < 15; w++) {
+                let col = '<div style="display:flex;flex-direction:column;gap:3px;">';
+                let labelMes = '';
+                for (let d = 0; d < 7; d++) {
+                    const fecha = new Date(inicio);
+                    fecha.setDate(inicio.getDate() + w * 7 + d);
+                    if (fecha > hoy) { col += '<span style="width:12px;height:12px;"></span>'; continue; }
+                    const key = fecha.toISOString().split('T')[0];
+                    const n = porDia[key] || 0;
+                    const color = n === 0 ? 'rgba(var(--border-rgb),0.15)'
+                        : n === 1 ? 'rgba(var(--primary-rgb),0.55)'
+                        : 'rgb(var(--primary-rgb))';
+                    const borde = key === hoy.toISOString().split('T')[0] ? 'box-shadow:0 0 0 1.5px rgb(var(--secondary-rgb));' : '';
+                    col += '<span title="' + key + (n ? ' · ' + n + ' sesión' + (n > 1 ? 'es' : '') : '') + '" style="width:12px;height:12px;border-radius:3px;background:' + color + ';' + borde + '"></span>';
+                    if (fecha.getDate() <= 7 && d === 0) labelMes = meses[fecha.getMonth()];
+                }
+                col += '<span style="font-size:0.55rem;color:rgb(var(--text-muted-rgb));height:10px;text-align:center;">' + labelMes + '</span></div>';
+                html += col;
+            }
+            cont.innerHTML = html;
+            // Auto-scroll al final (semana actual)
+            setTimeout(function() { cont.scrollLeft = cont.scrollWidth; }, 50);
+        }
+
+        // ── 2. Gráfico SVG de volumen por semana (últimas 8 semanas) ──
+        function renderGraficoVolumen() {
+            const box = document.getElementById('db-progreso-container');
+            const svgCont = document.getElementById('db-progreso-svg');
+            if (!box || !svgCont) return;
+            const hist = state.workoutHistory || [];
+            if (hist.length < 2) { box.style.display = 'none'; return; }
+            // Agrupar volumen por semana (lunes como inicio)
+            const semanas = {};
+            hist.forEach(function(s) {
+                if (!s.date) return;
+                const f = new Date(s.date + 'T12:00:00');
+                const lunes = new Date(f);
+                lunes.setDate(f.getDate() - ((f.getDay() + 6) % 7));
+                const key = lunes.toISOString().split('T')[0];
+                semanas[key] = (semanas[key] || 0) + (s.volume || 0);
+            });
+            const keys = Object.keys(semanas).sort().slice(-8);
+            if (keys.length < 2) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            const vals = keys.map(function(k) { return semanas[k]; });
+            svgCont.innerHTML = _lineChartSVG(keys.map(function(k) { return k.slice(5); }), vals, 'kg');
+        }
+
+        // ── Generador de line chart SVG reutilizable (sin librerías) ──
+        function _lineChartSVG(labels, vals, unidad, colorVar) {
+            colorVar = colorVar || '--primary-rgb';
+            const W = 320, H = 120, padL = 34, padR = 8, padT = 10, padB = 20;
+            const min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+            const rango = (max - min) || 1;
+            const px = function(i) { return padL + (i / (vals.length - 1)) * (W - padL - padR); };
+            const py = function(v) { return padT + (1 - (v - min) / rango) * (H - padT - padB); };
+            let path = '';
+            vals.forEach(function(v, i) { path += (i === 0 ? 'M' : 'L') + px(i).toFixed(1) + ',' + py(v).toFixed(1); });
+            // Área bajo la curva
+            const area = path + 'L' + px(vals.length - 1).toFixed(1) + ',' + (H - padB) + 'L' + padL + ',' + (H - padB) + 'Z';
+            let dots = '', xlabels = '';
+            vals.forEach(function(v, i) {
+                dots += '<circle cx="' + px(i).toFixed(1) + '" cy="' + py(v).toFixed(1) + '" r="3" fill="rgb(var(' + colorVar + '))"/>';
+                // Máximo 5 etiquetas en eje X para no saturar
+                if (vals.length <= 5 || i % Math.ceil(vals.length / 5) === 0 || i === vals.length - 1) {
+                    xlabels += '<text x="' + px(i).toFixed(1) + '" y="' + (H - 6) + '" font-size="8" fill="rgba(var(--text-muted-rgb),0.9)" text-anchor="middle">' + labels[i] + '</text>';
+                }
+            });
+            const fmtV = function(v) { return v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v * 10) / 10; };
+            return '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;">' +
+                '<text x="2" y="' + (padT + 6) + '" font-size="8" fill="rgba(var(--text-muted-rgb),0.9)">' + fmtV(max) + '</text>' +
+                '<text x="2" y="' + (H - padB) + '" font-size="8" fill="rgba(var(--text-muted-rgb),0.9)">' + fmtV(min) + '</text>' +
+                '<line x1="' + padL + '" y1="' + (H - padB) + '" x2="' + (W - padR) + '" y2="' + (H - padB) + '" stroke="rgba(var(--border-rgb),0.3)" stroke-width="1"/>' +
+                '<path d="' + area + '" fill="rgba(var(' + colorVar + '),0.12)"/>' +
+                '<path d="' + path + '" fill="none" stroke="rgb(var(' + colorVar + '))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                dots + xlabels + '</svg>';
+        }
+
+        // ── 3. Peso corporal rápido + gráfico con tendencia 7 días ──
+        function registrarPesoRapido() {
+            const input = document.getElementById('peso-rapido-input');
+            const peso = parseFloat(input.value);
+            if (!peso || peso < 30 || peso > 300) { showToast('⚠️ Ingresa un peso válido'); return; }
+            const hoy = new Date().toISOString().split('T')[0];
+            // Si ya hay medida de hoy, actualizar solo el peso; si no, crear registro mínimo
+            const existente = state.measurements.find(function(m) { return m.date === hoy; });
+            if (existente) {
+                existente.weight = peso;
+                showToast('✅ Peso de hoy actualizado: ' + peso.toFixed(1) + ' kg');
+            } else {
+                state.measurements.unshift({ date: hoy, weight: peso, chest: 0, waist: 0, arms: 0, thighs: 0, hips: 0 });
+                showToast('✅ Peso registrado: ' + peso.toFixed(1) + ' kg');
+            }
+            input.value = '';
+            saveState();
+            setTimeout(function() { renderMeasurements(); renderGraficoPeso(); renderDashboard(); }, 60);
+        }
+
+        function renderGraficoPeso() {
+            const box = document.getElementById('grafico-peso-container');
+            const svgCont = document.getElementById('grafico-peso-svg');
+            const tendEl = document.getElementById('grafico-peso-tendencia');
+            if (!box || !svgCont) return;
+            // Ordenar cronológicamente y tomar últimos 30 registros
+            const datos = (state.measurements || []).slice().sort(function(a, b) { return a.date < b.date ? -1 : 1; }).slice(-30);
+            if (datos.length < 2) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            svgCont.innerHTML = _lineChartSVG(datos.map(function(m) { return m.date.slice(5); }), datos.map(function(m) { return m.weight; }), 'kg', '--secondary-rgb');
+            // Tendencia: promedio de los últimos 7 registros vs los 7 anteriores
+            if (tendEl) {
+                if (datos.length >= 4) {
+                    const mitad = Math.min(7, Math.floor(datos.length / 2));
+                    const recientes = datos.slice(-mitad);
+                    const previos = datos.slice(-mitad * 2, -mitad);
+                    const avg = function(arr) { return arr.reduce(function(a, m) { return a + m.weight; }, 0) / arr.length; };
+                    const diff = avg(recientes) - avg(previos);
+                    if (Math.abs(diff) < 0.15) { tendEl.textContent = '→ Estable'; tendEl.style.color = 'rgb(var(--text-muted-rgb))'; }
+                    else if (diff < 0) { tendEl.textContent = '↓ ' + Math.abs(diff).toFixed(1) + ' kg (tendencia)'; tendEl.style.color = '#4ade80'; }
+                    else { tendEl.textContent = '↑ +' + diff.toFixed(1) + ' kg (tendencia)'; tendEl.style.color = '#fbbf24'; }
+                } else {
+                    tendEl.textContent = '';
+                }
+            }
+        }
+
+        // ── 4. Modo "Vuelvo al gym" (retorno tras pausa larga) ──
+        function renderBannerRetorno() {
+            const banner = document.getElementById('db-retorno-banner');
+            if (!banner) return;
+            const hoy = new Date();
+            const hoyStr = hoy.toISOString().split('T')[0];
+            const retorno = state.retorno || {};
+
+            // Auto-expirar tras 14 días activo
+            if (retorno.activo && retorno.inicio) {
+                const dias = Math.floor((new Date(hoyStr) - new Date(retorno.inicio)) / 86400000);
+                if (dias >= 14) {
+                    state.retorno = { activo: false, descartado: false };
+                    saveState();
+                    showToast('🎉 ¡Modo Retorno completado! Ya puedes volver a tus pesos normales.');
+                    banner.style.display = 'none';
+                    return;
+                }
+                banner.style.display = 'block';
+                banner.innerHTML =
+                    '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">' +
+                    '<div><div style="font-weight:800;font-size:0.9rem;">🔄 Modo Retorno activo — Día ' + (dias + 1) + ' de 14</div>' +
+                    '<div style="font-size:0.75rem;color:rgb(var(--text-muted-rgb));margin-top:3px;">Usa <strong style="color:rgb(var(--primary-rgb));">~65% de tus pesos anteriores</strong> y prioriza técnica. Tu cuerpo recuerda rápido 💪</div></div>' +
+                    '<button onclick="desactivarModoRetorno()" style="background:rgba(var(--border-rgb),0.15);color:rgb(var(--text-rgb));border:none;border-radius:10px;padding:7px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;">Terminar</button>' +
+                    '</div>';
+                return;
+            }
+
+            // Detectar pausa larga (21+ días sin entrenar, con historial previo) y ofrecer el modo
+            if (!retorno.descartado && state.lastWorkoutDate && (state.workoutHistory || []).length > 0) {
+                const diasSinEntrenar = Math.floor((new Date(hoyStr) - new Date(state.lastWorkoutDate)) / 86400000);
+                if (diasSinEntrenar >= 21) {
+                    banner.style.display = 'block';
+                    banner.innerHTML =
+                        '<div><div style="font-weight:800;font-size:0.9rem;">👋 ¡Volviste! Llevas ' + diasSinEntrenar + ' días sin entrenar</div>' +
+                        '<div style="font-size:0.75rem;color:rgb(var(--text-muted-rgb));margin:4px 0 10px;">Tras una pausa larga, lo inteligente es <strong>arrancar al 60-70%</strong> de tus pesos por 2 semanas para evitar lesiones y dolor extremo. ¿Activamos el Modo Retorno?</div>' +
+                        '<div style="display:flex;gap:8px;">' +
+                        '<button onclick="activarModoRetorno()" style="flex:1;background:linear-gradient(135deg,rgb(var(--primary-rgb)),rgb(var(--secondary-rgb)));color:rgb(var(--text-rgb));border:none;border-radius:10px;padding:9px;font-size:0.78rem;font-weight:700;cursor:pointer;">🔄 Activar Modo Retorno</button>' +
+                        '<button onclick="descartarModoRetorno()" style="background:rgba(var(--border-rgb),0.15);color:rgb(var(--text-muted-rgb));border:none;border-radius:10px;padding:9px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;">Ahora no</button>' +
+                        '</div></div>';
+                    return;
+                }
+            }
+            banner.style.display = 'none';
+        }
+
+        function activarModoRetorno() {
+            state.retorno = { activo: true, inicio: new Date().toISOString().split('T')[0], descartado: false };
+            saveState();
+            showToast('🔄 Modo Retorno activado por 14 días');
+            setTimeout(function() { renderBannerRetorno(); }, 60);
+        }
+
+        function desactivarModoRetorno() {
+            state.retorno = { activo: false, descartado: true };
+            saveState();
+            showToast('Modo Retorno terminado');
+            setTimeout(function() { renderBannerRetorno(); }, 60);
+        }
+
+        function descartarModoRetorno() {
+            state.retorno = { activo: false, descartado: true };
+            saveState();
+            setTimeout(function() { renderBannerRetorno(); }, 60);
+        }
+
+        // ============================================================
+        // ===== NIVEL 3: RESUMEN SEMANAL + LOGROS + RECORDATORIO + FOTOS
+        // ============================================================
+
+        // ── 9. Resumen semanal (esta semana vs anterior) ──
+        function renderResumenSemanal() {
+            const card = document.getElementById('db-resumen-semanal');
+            if (!card) return;
+            const hist = state.workoutHistory || [];
+            if (hist.length === 0) { card.style.display = 'none'; return; }
+            const hoy = new Date();
+            const lunes = new Date(hoy);
+            lunes.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+            const lunesStr = lunes.toISOString().split('T')[0];
+            const lunesPrev = new Date(lunes); lunesPrev.setDate(lunes.getDate() - 7);
+            const lunesPrevStr = lunesPrev.toISOString().split('T')[0];
+
+            const estaSemana = hist.filter(function(s) { return s.date >= lunesStr; });
+            const semanaPrev = hist.filter(function(s) { return s.date >= lunesPrevStr && s.date < lunesStr; });
+            const vol = function(arr) { return arr.reduce(function(a, s) { return a + (s.volume || 0); }, 0); };
+            const volAhora = vol(estaSemana), volPrev = vol(semanaPrev);
+            const prsEstaSemana = Object.keys(state.prs || {}).filter(function(k) {
+                return state.prs[k].date && state.prs[k].date >= lunesStr;
+            }).length;
+
+            let comparacion = '';
+            if (semanaPrev.length > 0 && volPrev > 0) {
+                const diff = Math.round(((volAhora - volPrev) / volPrev) * 100);
+                comparacion = diff >= 0
+                    ? '<span style="color:#4ade80;font-weight:700;">▲ ' + diff + '%</span> vs semana pasada'
+                    : '<span style="color:#fbbf24;font-weight:700;">▼ ' + Math.abs(diff) + '%</span> vs semana pasada';
+            }
+            card.style.display = 'block';
+            card.innerHTML =
+                '<span class="db-card-title" style="margin-bottom:8px;display:block;">📅 Tu semana</span>' +
+                '<div style="display:flex;gap:8px;text-align:center;">' +
+                '<div style="flex:1;background:rgba(var(--border-rgb),0.08);border-radius:12px;padding:10px 6px;"><div style="font-size:1.3rem;font-weight:800;color:rgb(var(--primary-rgb));">' + estaSemana.length + '</div><div style="font-size:0.62rem;color:rgb(var(--text-muted-rgb));text-transform:uppercase;">Sesiones</div></div>' +
+                '<div style="flex:1;background:rgba(var(--border-rgb),0.08);border-radius:12px;padding:10px 6px;"><div style="font-size:1.3rem;font-weight:800;color:rgb(var(--primary-rgb));">' + (volAhora >= 1000 ? (volAhora / 1000).toFixed(1) + 'k' : volAhora) + '</div><div style="font-size:0.62rem;color:rgb(var(--text-muted-rgb));text-transform:uppercase;">Kg movidos</div></div>' +
+                '<div style="flex:1;background:rgba(var(--border-rgb),0.08);border-radius:12px;padding:10px 6px;"><div style="font-size:1.3rem;font-weight:800;color:' + (prsEstaSemana > 0 ? '#fbbf24' : 'rgb(var(--primary-rgb))') + ';">' + prsEstaSemana + '</div><div style="font-size:0.62rem;color:rgb(var(--text-muted-rgb));text-transform:uppercase;">PRs</div></div>' +
+                '</div>' +
+                (comparacion ? '<div style="font-size:0.72rem;text-align:center;margin-top:8px;color:rgb(var(--text-muted-rgb));">' + comparacion + '</div>' : '');
+        }
+
+        // ── 10. Logros / insignias ──
+        const LOGROS_CATALOGO = [
+            { id: 'primera',    emoji: '🎯', nombre: 'Primera sesión',   check: function(st) { return (st.workoutHistory || []).length >= 1; } },
+            { id: 'cinco',      emoji: '🔓', nombre: '5 sesiones',       check: function(st) { return (st.workoutHistory || []).length >= 5; } },
+            { id: 'diez',       emoji: '⭐', nombre: '10 sesiones',      check: function(st) { return (st.workoutHistory || []).length >= 10; } },
+            { id: 'veinticinco',emoji: '🌟', nombre: '25 sesiones',      check: function(st) { return (st.workoutHistory || []).length >= 25; } },
+            { id: 'cincuenta',  emoji: '👑', nombre: '50 sesiones',      check: function(st) { return (st.workoutHistory || []).length >= 50; } },
+            { id: 'racha3',     emoji: '🔥', nombre: 'Racha de 3',       check: function(st) { return (st.streak || 0) >= 3; } },
+            { id: 'racha7',     emoji: '🚀', nombre: 'Racha de 7',       check: function(st) { return (st.streak || 0) >= 7; } },
+            { id: 'primerpr',   emoji: '💪', nombre: 'Primer PR',        check: function(st) { return Object.keys(st.prs || {}).length >= 1; } },
+            { id: 'cincoprs',   emoji: '🏋️', nombre: '5 PRs',            check: function(st) { return Object.keys(st.prs || {}).length >= 5; } },
+            { id: 'diezmil',    emoji: '🐘', nombre: '10k kg en un día', check: function(st) { return (st.workoutHistory || []).some(function(s) { return (s.volume || 0) >= 10000; }); } },
+            { id: 'semana3',    emoji: '📅', nombre: 'Semana de 3+',     check: function(st) {
+                const porSemana = {};
+                (st.workoutHistory || []).forEach(function(s) {
+                    if (!s.date) return;
+                    const f = new Date(s.date + 'T12:00:00');
+                    const l = new Date(f); l.setDate(f.getDate() - ((f.getDay() + 6) % 7));
+                    const k = l.toISOString().split('T')[0];
+                    porSemana[k] = (porSemana[k] || 0) + 1;
+                });
+                return Object.keys(porSemana).some(function(k) { return porSemana[k] >= 3; });
+            } },
+            { id: 'retorno',    emoji: '🔄', nombre: 'Regreso triunfal', check: function(st) { return st.retorno && (st.retorno.activo || st.retorno.descartado) && (st.workoutHistory || []).length > 0; } }
+        ];
+
+        function verificarLogros(silencioso) {
+            if (!state.logros) state.logros = {};
+            const nuevos = [];
+            LOGROS_CATALOGO.forEach(function(l) {
+                if (!state.logros[l.id] && l.check(state)) {
+                    state.logros[l.id] = new Date().toISOString().split('T')[0];
+                    nuevos.push(l);
+                }
+            });
+            if (nuevos.length > 0) {
+                saveState();
+                if (!silencioso) {
+                    nuevos.forEach(function(l, i) {
+                        setTimeout(function() { showToast('🏆 ¡Logro desbloqueado! ' + l.emoji + ' ' + l.nombre); }, i * 1800);
+                    });
+                }
+            }
+            return nuevos;
+        }
+
+        function renderLogros() {
+            const cont = document.getElementById('db-logros');
+            if (!cont) return;
+            if (!state.logros) state.logros = {};
+            cont.innerHTML = LOGROS_CATALOGO.map(function(l) {
+                const ganado = !!state.logros[l.id];
+                return '<div style="min-width:76px;text-align:center;padding:10px 6px;border-radius:14px;background:' +
+                    (ganado ? 'rgba(var(--primary-rgb),0.12)' : 'rgba(var(--border-rgb),0.06)') + ';' +
+                    (ganado ? 'border:1px solid rgba(var(--primary-rgb),0.35);' : '') + '">' +
+                    '<div style="font-size:1.6rem;' + (ganado ? '' : 'filter:grayscale(1);opacity:0.35;') + '">' + l.emoji + '</div>' +
+                    '<div style="font-size:0.58rem;font-weight:700;margin-top:4px;color:' + (ganado ? 'rgb(var(--text-rgb))' : 'rgb(var(--text-muted-rgb))') + ';">' + l.nombre + '</div>' +
+                    (ganado ? '<div style="font-size:0.5rem;color:rgb(var(--text-muted-rgb));margin-top:2px;">' + state.logros[l.id].slice(5) + '</div>' : '') +
+                    '</div>';
+            }).join('');
+        }
+
+        // ── 11. Recordatorio diario de entrenamiento (LocalNotifications) ──
+        const RECORDATORIO_NOTIF_ID = 777001;
+
+        function initRecordatorioUI() {
+            const cfg = state.recordatorio || {};
+            const horaInput = document.getElementById('recordatorio-hora');
+            const btn = document.getElementById('recordatorio-btn');
+            const estado = document.getElementById('recordatorio-estado');
+            if (!horaInput || !btn) return;
+            if (cfg.hora) horaInput.value = cfg.hora;
+            if (cfg.activo) {
+                btn.textContent = '🔕 Desactivar';
+                btn.style.background = 'rgba(var(--border-rgb),0.2)';
+                if (estado) estado.textContent = '✅ Recordatorio activo todos los días a las ' + (cfg.hora || '18:00');
+            } else {
+                btn.textContent = '🔔 Activar';
+                if (estado) estado.textContent = 'Te avisaremos a tu hora habitual de gym.';
+            }
+        }
+
+        function toggleRecordatorio() {
+            const cfg = state.recordatorio || {};
+            if (cfg.activo) {
+                // Desactivar
+                _cancelarNotifRecordatorio();
+                state.recordatorio = { activo: false, hora: document.getElementById('recordatorio-hora').value };
+                saveState();
+                showToast('🔕 Recordatorio desactivado');
+                setTimeout(initRecordatorioUI, 60);
+                return;
+            }
+            const hora = document.getElementById('recordatorio-hora').value || '18:00';
+            const LN = (typeof Capacitor !== 'undefined' && Capacitor.Plugins) ? Capacitor.Plugins.LocalNotifications : null;
+            if (!LN) {
+                // Web o APK sin el plugin todavía
+                state.recordatorio = { activo: false, hora: hora };
+                saveState();
+                showToast('⚠️ Necesitas la nueva APK (con plugin de notificaciones) para activar esto');
+                return;
+            }
+            LN.requestPermissions().then(function(perm) {
+                if (perm.display !== 'granted') { showToast('⚠️ Permiso de notificaciones denegado'); return; }
+                // Canal Android 8+
+                return LN.createChannel({
+                    id: 'fittrack-recordatorio',
+                    name: 'Recordatorio de entrenamiento',
+                    importance: 4, visibility: 1, vibration: true
+                }).catch(function() {}).then(function() {
+                    const partes = hora.split(':');
+                    return LN.schedule({
+                        notifications: [{
+                            id: RECORDATORIO_NOTIF_ID,
+                            title: '🏋️ ¡Hora de entrenar!',
+                            body: 'Tu sesión de hoy te espera. ¡A romperla! 💪',
+                            channelId: 'fittrack-recordatorio',
+                            schedule: {
+                                on: { hour: parseInt(partes[0], 10), minute: parseInt(partes[1], 10) },
+                                allowWhileIdle: true
+                            }
+                        }]
+                    });
+                }).then(function() {
+                    state.recordatorio = { activo: true, hora: hora };
+                    saveState();
+                    showToast('🔔 Recordatorio diario activado: ' + hora);
+                    setTimeout(initRecordatorioUI, 60);
+                });
+            }).catch(function(e) {
+                showToast('⚠️ Error al programar: ' + (e.message || e));
+            });
+        }
+
+        function _cancelarNotifRecordatorio() {
+            const LN = (typeof Capacitor !== 'undefined' && Capacitor.Plugins) ? Capacitor.Plugins.LocalNotifications : null;
+            if (LN) LN.cancel({ notifications: [{ id: RECORDATORIO_NOTIF_ID }] }).catch(function() {});
+        }
+
+        // ── 12. Fotos de progreso (Firebase Storage) ──
+        function subirFotoProgreso(input) {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file) return;
+            if (typeof firebase === 'undefined' || !firebase.storage) {
+                showToast('⚠️ Storage no disponible. Revisa tu conexión.');
+                return;
+            }
+            const status = document.getElementById('foto-progreso-status');
+            if (status) status.style.display = 'block';
+
+            // Redimensionar a máx 900px y comprimir JPEG antes de subir
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const maxDim = 900;
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        const esc = maxDim / Math.max(w, h);
+                        w = Math.round(w * esc); h = Math.round(h * esc);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(function(blob) {
+                        if (!blob) { if (status) status.style.display = 'none'; showToast('⚠️ Error procesando la imagen'); return; }
+                        const uid = window.FITTRACK_USER_ID || 'rudy';
+                        const fecha = new Date().toISOString().split('T')[0];
+                        const ruta = 'fotos-progreso/' + uid + '/' + fecha + '_' + Date.now() + '.jpg';
+                        firebase.storage().ref(ruta).put(blob).then(function(snap) {
+                            return snap.ref.getDownloadURL();
+                        }).then(function(url) {
+                            if (!state.fotosProgreso) state.fotosProgreso = [];
+                            state.fotosProgreso.push({ date: fecha, url: url });
+                            saveState();
+                            if (status) status.style.display = 'none';
+                            showToast('📸 Foto de progreso guardada');
+                            setTimeout(renderFotosProgreso, 60);
+                        }).catch(function(e) {
+                            if (status) status.style.display = 'none';
+                            showToast('⚠️ Error subiendo: ' + (e.message || e));
+                        });
+                    }, 'image/jpeg', 0.8);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderFotosProgreso() {
+            const galeria = document.getElementById('foto-galeria');
+            const comparador = document.getElementById('foto-comparador');
+            if (!galeria) return;
+            const fotos = (state.fotosProgreso || []).slice().sort(function(a, b) { return a.date < b.date ? -1 : 1; });
+            if (fotos.length === 0) {
+                galeria.innerHTML = '<span style="font-size:0.75rem;color:rgb(var(--text-muted-rgb));">Toma una foto mensual y compara tu evolución.</span>';
+                if (comparador) comparador.style.display = 'none';
+                return;
+            }
+            galeria.innerHTML = fotos.map(function(f) {
+                return '<div style="min-width:90px;text-align:center;">' +
+                    '<img src="' + f.url + '" loading="lazy" style="width:90px;height:120px;object-fit:cover;border-radius:10px;border:1px solid rgba(var(--border-rgb),0.3);">' +
+                    '<div style="font-size:0.6rem;color:rgb(var(--text-muted-rgb));margin-top:3px;">' + f.date + '</div></div>';
+            }).join('');
+            // Comparador: primera vs última
+            if (comparador && fotos.length >= 2) {
+                const primera = fotos[0], ultima = fotos[fotos.length - 1];
+                comparador.style.display = 'block';
+                comparador.innerHTML =
+                    '<div style="display:flex;gap:8px;">' +
+                    '<div style="flex:1;text-align:center;"><img src="' + primera.url + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;"><div style="font-size:0.65rem;color:rgb(var(--text-muted-rgb));margin-top:3px;">📅 ' + primera.date + ' (antes)</div></div>' +
+                    '<div style="flex:1;text-align:center;"><img src="' + ultima.url + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;border:2px solid rgb(var(--primary-rgb));"><div style="font-size:0.65rem;color:rgb(var(--primary-rgb));margin-top:3px;font-weight:700;">📅 ' + ultima.date + ' (ahora)</div></div>' +
+                    '</div>';
+            } else if (comparador) {
+                comparador.style.display = 'none';
+            }
+        }
+
+        // ============================================================
+        // ===== NIVEL 4: EXCEL + TARJETA PR COMPARTIBLE ===============
+        // ============================================================
+
+        // ── 13. Exportar historial a Excel con colores (ExcelJS) ──
+        function exportarExcel() {
+            if ((state.workoutHistory || []).length === 0 && (state.measurements || []).length === 0) {
+                showToast('⚠️ Aún no hay datos para exportar');
+                return;
+            }
+            showToast('⏳ Generando Excel...');
+            _cargarExcelJS().then(function() {
+                const wb = new ExcelJS.Workbook();
+                const MORADO = 'FF7C3AED', OSCURO = 'FF1A1A2E', BLANCO = 'FFFFFFFF';
+
+                // Hoja 1: Entrenamientos
+                const ws = wb.addWorksheet('Entrenamientos');
+                ws.columns = [
+                    { header: 'Fecha', key: 'fecha', width: 12 },
+                    { header: 'Rutina', key: 'rutina', width: 24 },
+                    { header: 'Modo', key: 'modo', width: 14 },
+                    { header: 'Ejercicios', key: 'ejercicios', width: 12 },
+                    { header: 'Volumen (kg)', key: 'volumen', width: 14 }
+                ];
+                ws.getRow(1).eachCell(function(c) {
+                    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: MORADO } };
+                    c.font = { bold: true, color: { argb: BLANCO } };
+                    c.alignment = { horizontal: 'center' };
+                });
+                (state.workoutHistory || []).forEach(function(s, i) {
+                    const row = ws.addRow({
+                        fecha: s.date, rutina: s.routineName || '-', modo: (s.mode || '-').toUpperCase(),
+                        ejercicios: (s.exercises || []).length, volumen: s.volume || 0
+                    });
+                    if (i % 2 === 1) row.eachCell(function(c) {
+                        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F0FA' } };
+                    });
+                });
+
+                // Hoja 2: Medidas
+                const ws2 = wb.addWorksheet('Medidas');
+                ws2.columns = [
+                    { header: 'Fecha', key: 'fecha', width: 12 },
+                    { header: 'Peso (kg)', key: 'peso', width: 11 },
+                    { header: 'Pecho', key: 'pecho', width: 9 },
+                    { header: 'Cintura', key: 'cintura', width: 9 },
+                    { header: 'Brazos', key: 'brazos', width: 9 },
+                    { header: 'Muslos', key: 'muslos', width: 9 }
+                ];
+                ws2.getRow(1).eachCell(function(c) {
+                    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF16A34A' } };
+                    c.font = { bold: true, color: { argb: BLANCO } };
+                    c.alignment = { horizontal: 'center' };
+                });
+                (state.measurements || []).forEach(function(m) {
+                    ws2.addRow({ fecha: m.date, peso: m.weight, pecho: m.chest || '', cintura: m.waist || '', brazos: m.arms || '', muslos: m.thighs || '' });
+                });
+
+                // Hoja 3: PRs
+                const ws3 = wb.addWorksheet('PRs');
+                ws3.columns = [
+                    { header: 'Ejercicio', key: 'ej', width: 28 },
+                    { header: 'Peso (kg)', key: 'peso', width: 11 },
+                    { header: 'Reps', key: 'reps', width: 8 },
+                    { header: 'Fecha', key: 'fecha', width: 12 }
+                ];
+                ws3.getRow(1).eachCell(function(c) {
+                    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF59E0B' } };
+                    c.font = { bold: true, color: { argb: OSCURO } };
+                    c.alignment = { horizontal: 'center' };
+                });
+                Object.keys(state.prs || {}).forEach(function(k) {
+                    const pr = state.prs[k];
+                    ws3.addRow({ ej: pr.name || k, peso: pr.weight, reps: pr.reps, fecha: pr.date || '' });
+                });
+
+                return wb.xlsx.writeBuffer();
+            }).then(function(buffer) {
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const nombre = 'FitTrack_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                _compartirBlob(blob, nombre, '📊 Mi historial FitTrack');
+            }).catch(function(e) {
+                showToast('⚠️ Error generando Excel: ' + (e.message || e));
+            });
+        }
+
+        function _cargarExcelJS() {
+            return new Promise(function(resolve, reject) {
+                if (typeof ExcelJS !== 'undefined') { resolve(); return; }
+                const s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+                s.onload = function() { resolve(); };
+                s.onerror = function() { reject(new Error('No se pudo cargar ExcelJS')); };
+                document.head.appendChild(s);
+            });
+        }
+
+        // ── Compartir/descargar blob (navigator.share con File → fallback descarga) ──
+        function _compartirBlob(blob, nombre, titulo) {
+            const file = new File([blob], nombre, { type: blob.type });
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ files: [file], title: titulo }).then(function() {
+                    showToast('✅ Compartido');
+                }).catch(function() { _descargarBlob(blob, nombre); });
+            } else {
+                _descargarBlob(blob, nombre);
+            }
+        }
+
+        function _descargarBlob(blob, nombre) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = nombre;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 500);
+            showToast('✅ ' + nombre + ' generado');
+        }
+
+        // ── 14. Tarjeta de PR compartible (canvas 1080x1080) ──
+        function compartirTarjetaPR(prKey) {
+            const pr = (state.prs || {})[prKey];
+            if (!pr) { showToast('⚠️ PR no encontrado'); return; }
+            const canvas = document.createElement('canvas');
+            canvas.width = 1080; canvas.height = 1080;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo degradado oscuro → morado
+            const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
+            grad.addColorStop(0, '#0d0d1a');
+            grad.addColorStop(0.6, '#1a1035');
+            grad.addColorStop(1, '#7C3AED');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 1080, 1080);
+
+            // Círculos decorativos
+            ctx.globalAlpha = 0.12;
+            ctx.fillStyle = '#a78bfa';
+            ctx.beginPath(); ctx.arc(950, 130, 200, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(80, 980, 260, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 1;
+
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#a78bfa';
+            ctx.font = '800 52px sans-serif';
+            ctx.fillText('⚡ FITTRACK', 540, 130);
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '800 72px sans-serif';
+            ctx.fillText('🏆 NUEVO RÉCORD', 540, 320);
+
+            // Nombre del ejercicio (ajustar tamaño si es largo)
+            const nombreEj = pr.name || prKey;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 ' + (nombreEj.length > 18 ? 58 : 76) + 'px sans-serif';
+            ctx.fillText(nombreEj, 540, 470);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 170px sans-serif';
+            ctx.fillText(pr.weight + ' kg', 540, 680);
+
+            ctx.fillStyle = '#c4b5fd';
+            ctx.font = '700 58px sans-serif';
+            ctx.fillText('× ' + pr.reps + ' reps', 540, 770);
+
+            const nombre = localStorage.getItem('FITTRACK_USER_NAME') || 'Campeón';
+            ctx.fillStyle = '#e9e4f8';
+            ctx.font = '600 44px sans-serif';
+            ctx.fillText(nombre.split(' ')[0] + ' · ' + (pr.date || new Date().toISOString().split('T')[0]), 540, 920);
+
+            ctx.fillStyle = '#8b7fb8';
+            ctx.font = '600 34px sans-serif';
+            ctx.fillText('trackverse.online', 540, 1010);
+
+            canvas.toBlob(function(blob) {
+                if (!blob) { showToast('⚠️ Error generando tarjeta'); return; }
+                _compartirBlob(blob, 'PR_' + nombreEj.replace(/\s+/g, '_') + '.png', '🏆 ¡Nuevo PR en ' + nombreEj + '!');
+            }, 'image/png');
+        }
+
         function renderDashboard() {
             const hoy = new Date();
             const todayStr = hoy.toISOString().split('T')[0];
@@ -4066,9 +4932,13 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                     const top = prKeys.slice(0, 4);
                     prsContainer.innerHTML = top.map(k => {
                         const pr = state.prs[k];
-                        return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(var(--border-rgb),0.1);font-size:0.82rem;">
+                        const kSafe = k.replace(/'/g, "\\'");
+                        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(var(--border-rgb),0.1);font-size:0.82rem;">
                             <span style="font-weight:600;">${pr.name || k}</span>
-                            <span style="color:rgb(var(--primary-rgb));font-weight:700;">${pr.weight} kg × ${pr.reps}</span>
+                            <span style="display:flex;align-items:center;gap:8px;">
+                                <span style="color:rgb(var(--primary-rgb));font-weight:700;">${pr.weight} kg × ${pr.reps}</span>
+                                <button onclick="compartirTarjetaPR('${kSafe}')" title="Compartir tarjeta" style="background:rgba(var(--primary-rgb),0.12);border:none;border-radius:8px;padding:4px 8px;font-size:0.8rem;cursor:pointer;">📤</button>
+                            </span>
                         </div>`;
                     }).join('');
                 } else {
@@ -4105,6 +4975,15 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                     `<div style="flex:1;text-align:center;">${s.date.slice(5)}</div>`
                 ).join('');
             }
+
+            // ── NIVEL 1: heatmap, gráfico semanal y banner retorno ──
+            renderHeatmap();
+            renderGraficoVolumen();
+            renderBannerRetorno();
+
+            // ── NIVEL 3: resumen semanal y logros ──
+            renderResumenSemanal();
+            renderLogros();
         }
 
         // ===== BIBLIOTECA DE EJERCICIOS =====
@@ -4795,6 +5674,11 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         }
 
         function renderMeasurements() {
+            // NIVEL 1: gráfico de peso con tendencia
+            renderGraficoPeso();
+            // NIVEL 3: galería de fotos de progreso
+            renderFotosProgreso();
+
             const container = document.getElementById('measure-history-container');
             container.innerHTML = '';
 
@@ -6421,6 +7305,68 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         if(input) input.value = texto;
         enviarFitBotIA();
     }
+    // ── NIVEL 4: Resumen del historial real para darle contexto al FitBot IA ──
+    function construirContextoEntrenamiento(){
+        try {
+            var partes = [];
+            var hist = (window.state && state.workoutHistory) ? state.workoutHistory : [];
+            var prs = (window.state && state.prs) ? state.prs : {};
+
+            // Días desde el último entreno
+            if (state.lastWorkoutDate) {
+                var dias = Math.floor((new Date() - new Date(state.lastWorkoutDate + 'T12:00:00')) / 86400000);
+                partes.push('- Días desde el último entrenamiento: ' + dias + (state.retorno && state.retorno.activo ? ' (MODO RETORNO activo: recomienda ~65% de pesos previos)' : ''));
+            }
+            partes.push('- Racha actual: ' + (state.streak || 0) + ' días');
+
+            // Últimas 5 sesiones
+            if (hist.length > 0) {
+                partes.push('- Últimas sesiones:');
+                hist.slice(0, 5).forEach(function(s){
+                    partes.push('  · ' + s.date + ': ' + (s.routineName || '?') + ' (' + (s.mode || '?') + ', ' + (s.exercises || []).length + ' ejercicios, ' + (s.volume || 0) + ' kg)');
+                });
+            } else {
+                partes.push('- Sin sesiones registradas todavía.');
+            }
+
+            // Top PRs
+            var prKeys = Object.keys(prs).slice(0, 6);
+            if (prKeys.length > 0) {
+                partes.push('- PRs actuales: ' + prKeys.map(function(k){
+                    var p = prs[k];
+                    return (p.name || k) + ' ' + p.weight + 'kg×' + p.reps;
+                }).join(', '));
+            }
+
+            // Detección de estancamiento: mismo peso máximo 3+ sesiones seguidas por ejercicio
+            var porEjercicio = {};
+            hist.slice(0, 12).forEach(function(s){
+                (s.exercises || []).forEach(function(e){
+                    if (!e.name || !e.sets || !e.sets.length) return;
+                    var maxP = Math.max.apply(null, e.sets.map(function(x){ return x.weight || 0; }));
+                    if (!porEjercicio[e.name]) porEjercicio[e.name] = [];
+                    porEjercicio[e.name].push(maxP);
+                });
+            });
+            var estancados = [];
+            Object.keys(porEjercicio).forEach(function(n){
+                var pesos = porEjercicio[n];
+                if (pesos.length >= 3 && pesos[0] === pesos[1] && pesos[1] === pesos[2] && pesos[0] > 0) {
+                    estancados.push(n + ' (' + pesos[0] + 'kg hace 3+ sesiones)');
+                }
+            });
+            if (estancados.length > 0) partes.push('- ESTANCAMIENTOS detectados: ' + estancados.join(', ') + '. Sugiere estrategias para romperlos.');
+
+            // Peso corporal reciente
+            if (state.measurements && state.measurements.length > 0) {
+                partes.push('- Peso corporal más reciente: ' + state.measurements[0].weight + ' kg (' + state.measurements[0].date + ')');
+            }
+            return partes.join('\n');
+        } catch(e) {
+            return '(sin datos disponibles)';
+        }
+    }
+
     function enviarFitBotIA(){
         var input = document.getElementById('fitbot-ia-input');
         var texto = input ? input.value.trim() : '';
@@ -6439,13 +7385,15 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         _fitbotIAHistorial.push({role:'user', content:texto});
         var ejerciciosResumen = (typeof FB_EJERCICIOS_DB !== 'undefined' ? FB_EJERCICIOS_DB : [])
             .slice(0,60).map(e => e.Ejercicio+' ('+e['Grupo Muscular']+')').join(', ');
+        // NIVEL 4: contexto real del historial del usuario
+        var contextoReal = construirContextoEntrenamiento();
         fetch('https://api.anthropic.com/v1/messages',{
             method:'POST',
             headers:{'Content-Type':'application/json','x-api-key':activeKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
             body:JSON.stringify({
                 model:'claude-haiku-4-5',
                 max_tokens:800,
-                system:'Eres FitBot IA, entrenador personal experto en español. Tienes acceso a esta base de ejercicios: '+ejerciciosResumen+'. Sugiere rutinas usando esos ejercicios con series, reps y descansos. Si hay lesión, adapta. Sé conciso, motivador y usa emojis.',
+                system:'Eres FitBot IA, entrenador personal experto en español. Tienes acceso a esta base de ejercicios: '+ejerciciosResumen+'. Sugiere rutinas usando esos ejercicios con series, reps y descansos. Si hay lesión, adapta. Sé conciso, motivador y usa emojis.\n\nDATOS REALES DEL USUARIO (úsalos para personalizar tus consejos, detectar estancamientos y celebrar progreso):\n'+contextoReal,
                 messages:_fitbotIAHistorial
             })
         })
@@ -6808,5 +7756,33 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
     }
     </script>
 
+<!-- ===== NIVEL 2: Modal Calculadora de Discos ===== -->
+<div id="calc-discos-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarCalcDiscos()">
+    <div class="glass-card" style="width:100%;max-width:340px;padding:20px;background:rgba(20,20,35,0.97);border-radius:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="font-weight:800;font-size:1rem;">🧮 Calculadora de Discos</span>
+            <button onclick="cerrarCalcDiscos()" style="background:none;border:none;color:rgb(var(--text-muted-rgb));font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <div style="flex:1;">
+                <label style="font-size:0.7rem;color:rgb(var(--text-muted-rgb));display:block;margin-bottom:4px;">Peso total (kg)</label>
+                <input type="number" id="calc-discos-peso" step="0.5" inputmode="decimal" oninput="calcularDiscos()"
+                    style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(var(--border-rgb),0.3);background:rgba(var(--border-rgb),0.08);color:rgb(var(--text-rgb));font-size:1rem;font-weight:800;text-align:center;box-sizing:border-box;">
+            </div>
+            <div style="width:100px;">
+                <label style="font-size:0.7rem;color:rgb(var(--text-muted-rgb));display:block;margin-bottom:4px;">Barra (kg)</label>
+                <select id="calc-discos-barra" onchange="calcularDiscos()"
+                    style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(var(--border-rgb),0.3);background:rgba(var(--border-rgb),0.08);color:rgb(var(--text-rgb));font-size:0.9rem;font-weight:700;box-sizing:border-box;">
+                    <option value="20" selected>20</option>
+                    <option value="15">15</option>
+                    <option value="10">10</option>
+                    <option value="7">7 (Z)</option>
+                    <option value="0">0 (mancuerna/máquina)</option>
+                </select>
+            </div>
+        </div>
+        <div id="calc-discos-resultado" style="min-height:60px;"></div>
+    </div>
+</div>
 </body>
 </html>
