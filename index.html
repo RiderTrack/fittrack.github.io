@@ -3790,9 +3790,13 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 showToast('⚠️ Imagen muy pesada (máx 8MB). Elige otra.');
                 return;
             }
+            // Verificar sesión: las reglas de Storage exigen usuario autenticado
+            if (!fbAuth || !fbAuth.currentUser) {
+                showToast('⚠️ Inicia sesión con Google para subir imágenes');
+                return;
+            }
             showToast('⏳ Subiendo imagen...');
             var uid = window.FITTRACK_USER_ID || 'rudy';
-            // Nombre de archivo seguro a partir del ejercicio
             var slug = pend.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                 .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
             var ext = (file.name.match(/\.(\w+)$/) || [0, 'jpg'])[1].toLowerCase();
@@ -3810,7 +3814,16 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 if (fallback) fallback.style.display = 'none';
                 showToast('✅ Imagen subida y guardada');
             }).catch(function(e) {
-                showToast('⚠️ Error subiendo: ' + (e.message || e));
+                console.error('Storage upload error:', e);
+                var msg = e.code || e.message || e;
+                if (String(msg).indexOf('unauthorized') !== -1 || String(msg).indexOf('permission') !== -1) {
+                    msg = 'Reglas de Storage bloquean la subida. Revisa Firebase Console → Storage → Rules';
+                } else if (String(msg).indexOf('storage/unknown') !== -1) {
+                    msg = '¿Storage está activado en Firebase Console? (storage/unknown)';
+                } else if (String(msg).indexOf('retry-limit') !== -1 || String(msg).indexOf('network') !== -1) {
+                    msg = 'Problema de conexión. Intenta de nuevo';
+                }
+                showToast('⚠️ ' + msg);
             });
         }
 
@@ -4646,6 +4659,10 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             if (!file) return;
             if (typeof firebase === 'undefined' || !firebase.storage) {
                 showToast('⚠️ Storage no disponible. Revisa tu conexión.');
+                return;
+            }
+            if (!fbAuth || !fbAuth.currentUser) {
+                showToast('⚠️ Inicia sesión con Google para subir fotos');
                 return;
             }
             const status = document.getElementById('foto-progreso-status');
