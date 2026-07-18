@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Install LocalNotifications plugin (recordatorio de entrenamiento)
+        run: npm install @capacitor/local-notifications@6 --legacy-peer-deps || npm install @capacitor/local-notifications --legacy-peer-deps
+
       - name: Install imagemagick
         run: sudo apt-get install -y imagemagick
 
@@ -75,9 +78,13 @@ jobs:
           sed -i 's|</activity>|        <intent-filter>\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:scheme="fittrack" android:host="callback" />\n            </intent-filter>\n        </activity>|' "$MANIFEST"
           echo "✅ Deep link Spotify agregado"
 
-      - name: Replace all app icons
+      - name: 🔔 Generar iconos HD (mejorado, portado de RiderTrack)
         run: |
           if [ -f "icon.png" ]; then
+            echo "📐 Tamaño del icon.png original:"
+            identify icon.png
+
+            # Iconos launcher nítidos con Lanczos + unsharp
             for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
               case $density in
                 mdpi)    size=48  ;;
@@ -88,20 +95,45 @@ jobs:
               esac
               dir="android/app/src/main/res/mipmap-${density}"
               mkdir -p "$dir"
-              convert icon.png -resize ${size}x${size} "${dir}/ic_launcher.png"
-              convert icon.png -resize ${size}x${size} "${dir}/ic_launcher_round.png"
-              convert icon.png -resize ${size}x${size} "${dir}/ic_launcher_foreground.png"
+              convert icon.png -resize ${size}x${size}\! -filter Lanczos -quality 100 -unsharp 0x0.5 "${dir}/ic_launcher.png"
+              convert icon.png -resize ${size}x${size}\! -filter Lanczos -quality 100 -unsharp 0x0.5 "${dir}/ic_launcher_round.png"
+              echo "  ✅ ${density}: ${size}x${size}"
             done
+
+            # Foreground para adaptive icons (Android 8+)
+            # El foreground es 108dp con el logo centrado al 70% (zona segura)
+            for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+              case $density in
+                mdpi)    fg=108 ;;
+                hdpi)    fg=162 ;;
+                xhdpi)   fg=216 ;;
+                xxhdpi)  fg=324 ;;
+                xxxhdpi) fg=432 ;;
+              esac
+              dir="android/app/src/main/res/mipmap-${density}"
+              convert icon.png -resize $((fg*70/100))x$((fg*70/100)) -filter Lanczos -quality 100 -unsharp 0x0.5 -gravity center -background none -extent ${fg}x${fg} "${dir}/ic_launcher_foreground.png"
+            done
+
+            # Adaptive icons XML (Android 8+)
             mkdir -p android/app/src/main/res/mipmap-anydpi-v26
-            echo '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@android:color/white"/><foreground android:drawable="@mipmap/ic_launcher_foreground"/></adaptive-icon>' > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+            printf '<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@color/ic_launcher_background"/>\n    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>' > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
             cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-            echo "Icons replaced"
+
+            # Fondo del adaptive icon: negro (combina con el icono neon morado)
+            mkdir -p android/app/src/main/res/values
+            rm -f android/app/src/main/res/values/ic_launcher_background.xml
+            rm -f android/app/src/main/res/values/colors.xml
+            printf '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#000000</color>\n</resources>' > android/app/src/main/res/values/colors.xml
+
+            echo "✅ Todos los iconos generados en HD con unsharp mask"
+          else
+            echo "⚠️ No hay icon.png, usando iconos default"
           fi
 
       - name: Update AndroidManifest permissions
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />\n    <application|' "$MANIFEST"
+          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />\n    <application|' "$MANIFEST"
 
       - name: Set Gradle permissions
         run: chmod +x android/gradlew
