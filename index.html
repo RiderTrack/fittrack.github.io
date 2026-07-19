@@ -1845,6 +1845,15 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             </div>
         </div>
 
+        <!-- Reset completo de datos locales -->
+        <div class="glass-card studio-section" style="margin-top:14px;border:1px solid rgba(239,68,68,0.2);">
+            <div class="studio-title" style="color:#f87171;"><i data-lucide="alert-octagon" class="lc-ico"></i> Reset de datos locales</div>
+            <p style="font-size:0.72rem;color:rgb(var(--text-muted-rgb));margin:6px 0 10px;">Si la app te pide el cuestionario una y otra vez, usá este botón para borrar TODO localStorage y empezar de cero. No afecta tu cuenta Google ni Firebase.</p>
+            <button onclick="resetLocalCompleto()" style="width:100%;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:10px;padding:10px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                <i data-lucide="trash-2" class="lc-ico"></i> Borrar TODO y reiniciar app
+            </button>
+        </div>
+
         <div class="flex-between mb-4" style="margin-top:8px;">
             <div class="section-title" style="margin-bottom:0;"><i data-lucide="palette" class="lc-ico"></i> <span>Theme Studio Alpha</span></div>
         </div>
@@ -3018,9 +3027,23 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             verificarLogros(true);
 
             // ONBOARDING: primera vez sin perfil → wizard de bienvenida
-            // Solo abrir si NI local NI firebase tienen perfil, y si onboarding inicial OK
+            // === FIX DEFINITIVO: usar clave separada FITTRACK_PERFIL_COMPLETO ===
+            // Esta clave persiste aunque Firebase sobreescriba el state local.
             var onbInicialOk = localStorage.getItem('FITTRACK_ONBOARDING_OK');
-            if (!state.perfil && onbInicialOk) {
+            var perfilCompleto = localStorage.getItem('FITTRACK_PERFIL_COMPLETO');
+            
+            // Si la clave existe pero state.perfil no (Firebase lo borró), restaurar
+            if (perfilCompleto && !state.perfil) {
+                try {
+                    state.perfil = JSON.parse(perfilCompleto);
+                    console.log('[FitTrack] Perfil restaurado desde FITTRACK_PERFIL_COMPLETO');
+                } catch(e) {
+                    console.warn('[FitTrack] Error parseando FITTRACK_PERFIL_COMPLETO:', e);
+                }
+            }
+            
+            // Solo abrir el wizard si NO hay perfil Y NO se completó antes
+            if (!state.perfil && onbInicialOk && !perfilCompleto) {
                 setTimeout(abrirOnboarding, 600);
             }
 
@@ -3036,7 +3059,14 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                         var localSessions = (state.workoutHistory||[]).length || 0;
                         if (fbSessions > localSessions) {
                             // === MERGE: preservar datos locales importantes ===
-                            var perfilLocal = state.perfil || fbData.perfil;
+                            // Prioridad: 1) localStorage FITTRACK_PERFIL_COMPLETO  2) state.perfil local  3) fbData.perfil
+                            var perfilCompletoLS = null;
+                            try {
+                                var _pc = localStorage.getItem('FITTRACK_PERFIL_COMPLETO');
+                                if (_pc) perfilCompletoLS = JSON.parse(_pc);
+                            } catch(e) {}
+                            
+                            var perfilLocal = perfilCompletoLS || state.perfil || fbData.perfil;
                             var rutinaLocal = (state.fitbot && state.fitbot.rutinaRecomendada) || (fbData.fitbot && fbData.fitbot.rutinaRecomendada);
                             var rutinaActiva = (state.fitbot && state.fitbot.rutinaActivaEnPantalla) || (fbData.fitbot && fbData.fitbot.rutinaActivaEnPantalla) || false;
                             var rutinaFecha  = (state.fitbot && state.fitbot.rutinaFecha) || (fbData.fitbot && fbData.fitbot.rutinaFecha);
@@ -3066,6 +3096,10 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                             state.measurements = measurementsLocal;
 
                             localStorage.setItem('FITTRACK_ALPHA_V2_STATE', JSON.stringify(state));
+                            // Reasegurar que FITTRACK_PERFIL_COMPLETO siga presente
+                            if (state.perfil) {
+                                localStorage.setItem('FITTRACK_PERFIL_COMPLETO', JSON.stringify(state.perfil));
+                            }
                             applyTheme();
                             renderDashboard();
                             renderHistory();
@@ -3074,7 +3108,9 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                             if (rutinaLocal && rutinaActiva && typeof cargarRutinaFitBot === 'function') {
                                 cargarRutinaFitBot(rutinaLocal);
                             }
-                            showToast('<i data-lucide="cloud" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> Datos sincronizados desde Firebase');
+                            console.log('[FitTrack] Merge Firebase OK - perfil preservado:', !!state.perfil);
+                        } else {
+                            console.log('[FitTrack] Firebase ignorado (local tiene más sesiones)');
                         }
                     }
                 }).catch(function(e){
@@ -5150,6 +5186,9 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             if (state.perfil.objetivo && typeof MODE_PARAMETERS !== 'undefined' && MODE_PARAMETERS[state.perfil.objetivo]) {
                 state.activeMode = state.perfil.objetivo;
             }
+            // === CLAVE INDEPENDIENTE: marca que el wizard se completó ===
+            // Esto persiste aunque Firebase sobreescriba el state local.
+            localStorage.setItem('FITTRACK_PERFIL_COMPLETO', JSON.stringify(state.perfil));
             saveState();
             document.getElementById('onboarding-modal').style.display = 'none';
             showToast('<i data-lucide="target" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> Perfil guardado. ¡Tus rutinas ahora se ajustan a ti!');
@@ -7902,6 +7941,25 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             if(ob) ob.style.display = 'flex';
         }
     }
+
+    // === RESET COMPLETO: borra TODO localStorage y reinicia ===
+    function resetLocalCompleto(){
+        showModalConfirm(
+            '¿Borrar TODOS los datos locales?',
+            function(){
+                // Borrar todo lo de FitTrack
+                var keys = ['FITTRACK_ALPHA_V2_STATE','FITTRACK_ONBOARDING_OK','FITTRACK_PERFIL_COMPLETO',
+                           'FITTRACK_NOMBRE','FITTRACK_ANTHROPIC_KEY','FITTRACK_USER_ID',
+                           'FITTRACK_USER_NAME','FITTRACK_USER_EMAIL','FITTRACK_USER_PHOTO'];
+                keys.forEach(function(k){ localStorage.removeItem(k); });
+                console.log('[FitTrack] localStorage borrado completamente. Recargando...');
+                showToast('<i data-lucide="check-circle-2" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> Datos borrados. Reiniciando...');
+                setTimeout(function(){ window.location.reload(); }, 1000);
+            },
+            {confirmText:'Sí, borrar todo', danger:true}
+        );
+        return;
+    }
     function completarOnboarding(){
         var nombre = (document.getElementById('onboarding-nombre').value || '').trim();
         var key    = (document.getElementById('onboarding-apikey').value || '').trim();
@@ -7994,6 +8052,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             localStorage.removeItem('FITTRACK_USER_ID');
             localStorage.removeItem('FITTRACK_USER_NAME');
             localStorage.removeItem('FITTRACK_ONBOARDING_OK');
+            localStorage.removeItem('FITTRACK_PERFIL_COMPLETO');
             Capacitor.Plugins.GoogleAuth.signOut().then(function(){
                 var loginScreen = document.getElementById('login-screen');
                 if(loginScreen) loginScreen.style.display = 'flex';
@@ -8010,6 +8069,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             localStorage.removeItem('FITTRACK_USER_ID');
             localStorage.removeItem('FITTRACK_USER_NAME');
             localStorage.removeItem('FITTRACK_ONBOARDING_OK');
+            localStorage.removeItem('FITTRACK_PERFIL_COMPLETO');
             if(typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.GoogleAuth){
                 Capacitor.Plugins.GoogleAuth.signOut().catch(function(){});
             }
@@ -8115,6 +8175,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 localStorage.removeItem('FITTRACK_USER_ID');
                 localStorage.removeItem('FITTRACK_USER_NAME');
                 localStorage.removeItem('FITTRACK_ONBOARDING_OK');
+            localStorage.removeItem('FITTRACK_PERFIL_COMPLETO');
                 if(typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.GoogleAuth){
                     Capacitor.Plugins.GoogleAuth.signOut().catch(function(){});
                 }
