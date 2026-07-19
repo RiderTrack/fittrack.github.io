@@ -1721,6 +1721,14 @@
             <div id="recordatorio-estado" style="font-size:0.72rem;color:rgb(var(--text-muted-rgb));margin-top:8px;"></div>
         </div>
 
+        <!-- ===== ONBOARDING: Rehacer perfil ===== -->
+        <div class="glass-card studio-section" style="margin-bottom:14px;">
+            <div class="studio-title">🎯 Mi perfil de entrenamiento</div>
+            <p style="font-size:0.75rem;color:rgb(var(--text-muted-rgb));margin:8px 0 10px;">Objetivo, nivel, días por semana y equipo. Ajusta cómo se arman tus rutinas.</p>
+            <button onclick="abrirOnboarding()"
+                style="width:100%;background:rgba(var(--border-rgb),0.15);color:rgb(var(--text-rgb));border:1px solid rgba(var(--border-rgb),0.25);border-radius:10px;padding:10px;font-size:0.8rem;font-weight:700;cursor:pointer;">✏️ Editar mi perfil</button>
+        </div>
+
         <!-- Ajustes de cuenta -->
         <div class="glass-card studio-section" style="margin-bottom:14px;">
             <div class="studio-title">👤 Mi Perfil</div>
@@ -2935,6 +2943,11 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             initRecordatorioUI();
             verificarLogros(true);
 
+            // ONBOARDING: primera vez sin perfil → wizard de bienvenida
+            if (!state.perfil) {
+                setTimeout(abrirOnboarding, 600);
+            }
+
             // 2. Intentar cargar desde Firebase en segundo plano
             if (window.fbLoad) {
                 try {
@@ -3134,9 +3147,21 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             // Trigger de generación si cambia a rutina
             // FIX 1: Solo genera la rutina automática si FitBot NO tiene una rutina activa cargada
             if (viewId === 'view-rutina') {
+                const hoyRutina = new Date().toISOString().split('T')[0];
                 const tieneFitBotActiva = state.fitbot?.rutinaActivaEnPantalla === true &&
-                    state.fitbot?.rutinaRecomendada?.ejercicios?.length > 0;
-                if (!tieneFitBotActiva) {
+                    (state.fitbot?.rutinaRecomendada?.ejerciciosCompletos?.length > 0 ||
+                     state.fitbot?.rutinaRecomendada?.ejercicios?.length > 0) &&
+                    state.fitbot?.rutinaFecha === hoyRutina;
+                if (tieneFitBotActiva) {
+                    // Restaurar la rutina FitBot guardada (sobrevive al cierre de la app)
+                    cargarRutinaFitBot(state.fitbot.rutinaRecomendada);
+                } else {
+                    // Rutina de otro día o inexistente: limpiar y generar la del día
+                    if (state.fitbot && state.fitbot.rutinaActivaEnPantalla && state.fitbot.rutinaFecha !== hoyRutina) {
+                        state.fitbot.rutinaActivaEnPantalla = false;
+                        state.fitbot.rutinaRecomendada = null;
+                        saveState();
+                    }
                     generateTodayRoutine();
                 }
             }
@@ -4916,6 +4941,114 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             }, 'image/png');
         }
 
+        // ============================================================
+        // ===== ONBOARDING: Wizard de perfil (objetivo/nivel/días/equipo)
+        // ============================================================
+        const ONB_PASOS = [
+            {
+                clave: 'objetivo',
+                pregunta: '¿Cuál es tu objetivo principal?',
+                opciones: [
+                    { valor: 'hipertrofia', emoji: '💪', titulo: 'Ganar músculo', sub: 'Hipertrofia: más volumen y definición' },
+                    { valor: 'fuerza',      emoji: '🏋️', titulo: 'Ganar fuerza', sub: 'Pesos altos, pocas repeticiones' },
+                    { valor: 'potencia',    emoji: '⚡', titulo: 'Potencia', sub: 'Explosividad y velocidad' },
+                    { valor: 'descarga',    emoji: '🔄', titulo: 'Retomar suave', sub: 'Volver al ritmo sin lesionarme' }
+                ]
+            },
+            {
+                clave: 'nivel',
+                pregunta: '¿Cuál es tu experiencia con el entrenamiento de fuerza?',
+                opciones: [
+                    { valor: 'principiante', emoji: '🌱', titulo: 'Principiante', sub: 'Menos de 1 año' },
+                    { valor: 'intermedio',   emoji: '⚡', titulo: 'Intermedio', sub: '1-2 años' },
+                    { valor: 'avanzado',     emoji: '🔥', titulo: 'Avanzado', sub: 'Más de 2 años' }
+                ]
+            },
+            {
+                clave: 'dias',
+                pregunta: '¿Cuántos días por semana quieres entrenar?',
+                opciones: [
+                    { valor: 2, emoji: '2️⃣', titulo: '2 días', sub: 'Lo esencial' },
+                    { valor: 3, emoji: '3️⃣', titulo: '3 días', sub: 'Equilibrado' },
+                    { valor: 4, emoji: '4️⃣', titulo: '4 días', sub: 'Comprometido' },
+                    { valor: 5, emoji: '5️⃣', titulo: '5+ días', sub: 'A full' }
+                ]
+            },
+            {
+                clave: 'equipo',
+                pregunta: '¿Dónde entrenas actualmente?',
+                opciones: [
+                    { valor: 'gym-completo', emoji: '🏢', titulo: 'Gimnasio comercial', sub: 'Máquinas, poleas y pesos completos' },
+                    { valor: 'gym-pequeno',  emoji: '🏋️', titulo: 'Gimnasio pequeño', sub: 'Pesos libres y equipo básico' },
+                    { valor: 'casa',         emoji: '🏠', titulo: 'En casa', sub: 'Mancuernas y equipo mínimo' },
+                    { valor: 'peso-corporal',emoji: '🤸', titulo: 'Peso corporal', sub: 'Sin equipamiento' }
+                ]
+            }
+        ];
+        var _onbPaso = 0;
+        var _onbRespuestas = {};
+
+        function abrirOnboarding() {
+            _onbPaso = 0;
+            _onbRespuestas = (state.perfil && typeof state.perfil === 'object') ? Object.assign({}, state.perfil) : {};
+            document.getElementById('onboarding-modal').style.display = 'block';
+            _onbRender();
+        }
+
+        function _onbRender() {
+            const paso = ONB_PASOS[_onbPaso];
+            // Barra de progreso
+            document.getElementById('onb-progress').innerHTML = ONB_PASOS.map(function(_, i) {
+                return '<span style="flex:1;height:4px;border-radius:2px;background:' +
+                    (i <= _onbPaso ? 'rgb(var(--primary-rgb))' : 'rgba(255,255,255,0.12)') + ';"></span>';
+            }).join('');
+            document.getElementById('onb-pregunta').textContent = paso.pregunta;
+            document.getElementById('onb-opciones').innerHTML = paso.opciones.map(function(op, i) {
+                const activo = _onbRespuestas[paso.clave] === op.valor;
+                return '<button onclick="onbElegir(' + i + ')" style="display:flex;align-items:center;gap:14px;text-align:left;' +
+                    'background:' + (activo ? 'rgba(var(--primary-rgb),0.15)' : 'rgba(255,255,255,0.05)') + ';' +
+                    'border:1.5px solid ' + (activo ? 'rgb(var(--primary-rgb))' : 'rgba(255,255,255,0.08)') + ';' +
+                    'border-radius:16px;padding:16px;cursor:pointer;color:#fff;">' +
+                    '<span style="font-size:1.6rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);border-radius:12px;flex-shrink:0;">' + op.emoji + '</span>' +
+                    '<span style="flex:1;"><span style="display:block;font-weight:700;font-size:0.95rem;">' + op.titulo + '</span>' +
+                    '<span style="display:block;font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px;">' + op.sub + '</span></span>' +
+                    '<span style="color:rgba(255,255,255,0.3);">›</span></button>';
+            }).join('');
+            document.getElementById('onb-atras').style.display = _onbPaso > 0 ? 'block' : 'none';
+        }
+
+        function onbElegir(idx) {
+            const paso = ONB_PASOS[_onbPaso];
+            _onbRespuestas[paso.clave] = paso.opciones[idx].valor;
+            if (_onbPaso < ONB_PASOS.length - 1) {
+                _onbPaso++;
+                setTimeout(_onbRender, 120);
+            } else {
+                _onbFinalizar();
+            }
+        }
+
+        function onbAtras() {
+            if (_onbPaso > 0) { _onbPaso--; _onbRender(); }
+        }
+
+        function _onbFinalizar() {
+            state.perfil = Object.assign({}, _onbRespuestas, { fecha: new Date().toISOString().split('T')[0] });
+            // Aplicar el objetivo como modo activo del FitBot Engine
+            if (state.perfil.objetivo && typeof MODE_PARAMETERS !== 'undefined' && MODE_PARAMETERS[state.perfil.objetivo]) {
+                state.activeMode = state.perfil.objetivo;
+            }
+            saveState();
+            document.getElementById('onboarding-modal').style.display = 'none';
+            showToast('🎯 Perfil guardado. ¡Tus rutinas ahora se ajustan a ti!');
+            setTimeout(function() {
+                renderDashboard();
+                if (typeof generateTodayRoutine === 'function' && !(state.fitbot && state.fitbot.rutinaActivaEnPantalla)) {
+                    generateTodayRoutine();
+                }
+            }, 150);
+        }
+
         function renderDashboard() {
             const hoy = new Date();
             const todayStr = hoy.toISOString().split('T')[0];
@@ -6425,6 +6558,7 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             if (!state.fitbot) state.fitbot = {};
             state.fitbot.rutinaActivaEnPantalla = true;
             state.fitbot.rutinaRecomendada = rutina;
+            state.fitbot.rutinaFecha = new Date().toISOString().split('T')[0];
             saveState();
 
             const modeData = MODE_PARAMETERS[state.activeMode] || MODE_PARAMETERS['hipertrofia'];
@@ -7383,6 +7517,11 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             var hist = (window.state && state.workoutHistory) ? state.workoutHistory : [];
             var prs = (window.state && state.prs) ? state.prs : {};
 
+            // Perfil del onboarding
+            if (state.perfil) {
+                partes.push('- Perfil: objetivo ' + (state.perfil.objetivo || '?') + ', nivel ' + (state.perfil.nivel || '?') + ', ' + (state.perfil.dias || '?') + ' días/semana, entrena en ' + (state.perfil.equipo || '?') + '. Adapta ejercicios al equipo disponible.');
+            }
+
             // Días desde el último entreno
             if (state.lastWorkoutDate) {
                 var dias = Math.floor((new Date() - new Date(state.lastWorkoutDate + 'T12:00:00')) / 86400000);
@@ -7511,8 +7650,8 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             headers:{'Content-Type':'application/json','x-api-key':getFitBotKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
             body:JSON.stringify({
                 model:'claude-haiku-4-5',
-                max_tokens:1500,
-                system:'Convierte la rutina de entrenamiento en JSON. Responde SOLO con JSON válido, sin texto extra, sin markdown. Incluye TODAS las secciones que aparezcan en la rutina (calentamiento, ejercicios principales/auxiliares y enfriamiento/estiramientos). Si una sección no existe en el texto, devuélvela como array vacío. Formato exacto: {"tipoRutina":"Nombre","calentamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Calentamiento","Series":"1","Reps":"5 min","Descanso":"30s"}],"ejerciciosCompletos":[{"Ejercicio":"Nombre","Grupo Muscular":"Grupo","Series":"3","Reps":"8-12","Descanso":"60s"}],"enfriamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Enfriamiento","Series":"1","Reps":"30s","Descanso":"20s"}]}',
+                max_tokens:2500,
+                system:'Convierte la rutina de entrenamiento en JSON. Responde SOLO con JSON válido, sin texto extra, sin markdown. Incluye TODAS las secciones que aparezcan en la rutina (calentamiento, ejercicios principales/auxiliares y enfriamiento/estiramientos). Si una sección no existe en el texto, devuélvela como array vacío. Para CADA ejercicio incluye una explicación breve de la técnica correcta (campo Tecnica, 1-2 frases), el error más común (campo Errores) y un tip (campo Tips). Formato exacto: {"tipoRutina":"Nombre","calentamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Calentamiento","Series":"1","Reps":"5 min","Descanso":"30s","Tecnica":"...","Errores":"...","Tips":"..."}],"ejerciciosCompletos":[{"Ejercicio":"Nombre","Grupo Muscular":"Grupo","Series":"3","Reps":"8-12","Descanso":"60s","Tecnica":"...","Errores":"...","Tips":"..."}],"enfriamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Enfriamiento","Series":"1","Reps":"30s","Descanso":"20s","Tecnica":"...","Errores":"...","Tips":"..."}]}',
                 messages:[{role:'user', content:'Convierte esta rutina a JSON: ' + texto.substring(0, 5000)}]
             })
         })
@@ -7542,14 +7681,26 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
 
             // Normalizar campos al formato exacto que espera renderCard
             var _normalizarEj = function(ex){
+                var nombreEj = ex['Ejercicio'] || ex.nombre || ex.name || ex.ejercicio || 'Ejercicio';
+                // Fallback: buscar técnica en la base de 226 ejercicios por nombre
+                var enDB = null;
+                if (typeof FB_EJERCICIOS_DB !== 'undefined') {
+                    enDB = FB_EJERCICIOS_DB.find(function(e){
+                        return e['Ejercicio'] && e['Ejercicio'].toLowerCase() === nombreEj.toLowerCase();
+                    }) || null;
+                }
                 return {
-                    'Ejercicio':      ex['Ejercicio']      || ex.nombre    || ex.name       || ex.ejercicio || 'Ejercicio',
-                    'Grupo Muscular': ex['Grupo Muscular'] || ex.grupo     || ex.musculo    || ex.muscle    || '',
-                    'Equipo':         ex['Equipo']         || ex.equipo    || ex.equipment  || '',
+                    'Ejercicio':      nombreEj,
+                    'Grupo Muscular': ex['Grupo Muscular'] || ex.grupo     || ex.musculo    || ex.muscle    || (enDB ? enDB['Grupo Muscular'] : ''),
+                    'Equipo':         ex['Equipo']         || ex.equipo    || ex.equipment  || (enDB ? enDB['Equipo'] : ''),
                     'Series':         ex['Series']         || ex.series    || '3',
                     'Reps':           ex['Reps']           || ex.reps      || ex.repeticiones || '10-12',
                     'Duración':       ex['Duración']       || ex.duracion  || '',
-                    'Descanso':       ex['Descanso']       || ex.descanso  || '60s'
+                    'Descanso':       ex['Descanso']       || ex.descanso  || '60s',
+                    'Explicación':    ex['Explicación'] || ex['Tecnica'] || ex.tecnica || ex['Técnica'] || (enDB ? enDB['Explicación'] : '') || '',
+                    'Errores Comunes': ex['Errores Comunes'] || ex['Errores'] || ex.errores || (enDB ? enDB['Errores Comunes'] : '') || '',
+                    'Tips':           ex['Tips'] || ex.tips || (enDB ? enDB['Tips'] : '') || '',
+                    'Tempo':          ex['Tempo'] || ex.tempo || (enDB ? enDB['Tempo'] : '') || ''
                 };
             };
             rutina.ejerciciosCompletos = rutina.ejerciciosCompletos.map(_normalizarEj);
@@ -7828,6 +7979,19 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
     }
     </script>
 
+<!-- ===== ONBOARDING: Wizard de perfil inicial ===== -->
+<div id="onboarding-modal" style="display:none;position:fixed;inset:0;background:rgb(var(--bg-rgb,10,10,20));background:#0a0f1a;z-index:10000;overflow-y:auto;">
+    <div style="max-width:480px;margin:0 auto;padding:24px 20px 40px;min-height:100%;display:flex;flex-direction:column;">
+        <!-- Barra de progreso -->
+        <div id="onb-progress" style="display:flex;gap:6px;margin-bottom:28px;margin-top:8px;"></div>
+        <!-- Pregunta -->
+        <h2 id="onb-pregunta" style="font-size:1.6rem;font-weight:800;line-height:1.25;margin:0 0 24px;color:#fff;"></h2>
+        <!-- Opciones -->
+        <div id="onb-opciones" style="display:flex;flex-direction:column;gap:12px;flex:1;"></div>
+        <!-- Botón atrás -->
+        <button id="onb-atras" onclick="onbAtras()" style="display:none;margin-top:20px;background:rgba(255,255,255,0.08);color:#aaa;border:none;border-radius:12px;padding:12px;font-size:0.85rem;font-weight:700;cursor:pointer;">← Atrás</button>
+    </div>
+</div>
 <!-- ===== NIVEL 2: Modal Calculadora de Discos ===== -->
 <div id="calc-discos-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarCalcDiscos()">
     <div class="glass-card" style="width:100%;max-width:340px;padding:20px;background:rgba(20,20,35,0.97);border-radius:18px;">
