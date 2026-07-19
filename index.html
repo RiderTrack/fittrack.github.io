@@ -41,10 +41,9 @@
                     // Ocultar login
                     var loginScreen = document.getElementById('login-screen');
                     if(loginScreen) loginScreen.style.display = 'none';
-                    // Si no tiene API key → mostrar onboarding
-                    var apiKey = localStorage.getItem('FITTRACK_ANTHROPIC_KEY');
+                    // Si no completó el onboarding inicial → mostrarlo
                     var onboardingOk = localStorage.getItem('FITTRACK_ONBOARDING_OK');
-                    if(!apiKey || !onboardingOk){
+                    if(!onboardingOk){
                         var ob = document.getElementById('onboarding-screen');
                         if(ob){
                             // Pre-llenar el nombre
@@ -3019,11 +3018,16 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             verificarLogros(true);
 
             // ONBOARDING: primera vez sin perfil → wizard de bienvenida
-            if (!state.perfil) {
+            // Solo abrir si NI local NI firebase tienen perfil, y si onboarding inicial OK
+            var onbInicialOk = localStorage.getItem('FITTRACK_ONBOARDING_OK');
+            if (!state.perfil && onbInicialOk) {
                 setTimeout(abrirOnboarding, 600);
             }
 
             // 2. Intentar cargar desde Firebase en segundo plano
+            // ESTRATEGIA: Merge inteligente. Si Firebase tiene más workoutHistory,
+            // usamos Firebase PERO preservamos perfil, rutinaRecomendada y
+            // otros datos locales que no estén en Firebase.
             if (window.fbLoad) {
                 try {
                     window.fbLoad().then(function(fbData){
@@ -3031,33 +3035,51 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                         var fbSessions = (fbData.workoutHistory||[]).length || 0;
                         var localSessions = (state.workoutHistory||[]).length || 0;
                         if (fbSessions > localSessions) {
+                            // === MERGE: preservar datos locales importantes ===
+                            var perfilLocal = state.perfil || fbData.perfil;
+                            var rutinaLocal = (state.fitbot && state.fitbot.rutinaRecomendada) || (fbData.fitbot && fbData.fitbot.rutinaRecomendada);
+                            var rutinaActiva = (state.fitbot && state.fitbot.rutinaActivaEnPantalla) || (fbData.fitbot && fbData.fitbot.rutinaActivaEnPantalla) || false;
+                            var rutinaFecha  = (state.fitbot && state.fitbot.rutinaFecha) || (fbData.fitbot && fbData.fitbot.rutinaFecha);
+                            var estadoDiarioLocal = (state.fitbot && state.fitbot.estadoDiario) || (fbData.fitbot && fbData.fitbot.estadoDiario);
+                            var prsLocal = state.prs || fbData.prs || {};
+                            var customExLocal = state.customExercises || fbData.customExercises || [];
+                            var imagenesLocal = state.ejercicioImagenes || fbData.ejercicioImagenes || {};
+                            var themeLocal = state.theme || fbData.theme;
+                            var activeModeLocal = state.activeMode || fbData.activeMode || 'hipertrofia';
+                            var measurementsLocal = (state.measurements && state.measurements.length > 0) ? state.measurements : (fbData.measurements || []);
+
+                            // Aplicar fbData como base
                             state = fbData;
+
+                            // Restaurar datos locales preservados
+                            state.perfil = perfilLocal;
+                            if (!state.fitbot) state.fitbot = {};
+                            state.fitbot.rutinaRecomendada = rutinaLocal;
+                            state.fitbot.rutinaActivaEnPantalla = rutinaActiva;
+                            state.fitbot.rutinaFecha = rutinaFecha;
+                            state.fitbot.estadoDiario = estadoDiarioLocal;
+                            state.prs = prsLocal;
+                            state.customExercises = customExLocal;
+                            state.ejercicioImagenes = imagenesLocal;
+                            state.theme = themeLocal;
+                            state.activeMode = activeModeLocal;
+                            state.measurements = measurementsLocal;
+
                             localStorage.setItem('FITTRACK_ALPHA_V2_STATE', JSON.stringify(state));
                             applyTheme();
                             renderDashboard();
                             renderHistory();
                             renderMeasurements();
-                            showToast('Datos sincronizados desde Firebase');
+                            // Re-renderizar rutina si estaba activa
+                            if (rutinaLocal && rutinaActiva && typeof cargarRutinaFitBot === 'function') {
+                                cargarRutinaFitBot(rutinaLocal);
+                            }
+                            showToast('<i data-lucide="cloud" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> Datos sincronizados desde Firebase');
                         }
                     }
                 }).catch(function(e){
                     console.warn('No se pudo cargar Firebase:', e.message);
                 });
-                    if (fbData && fbData.workoutHistory) {
-                        // Usar Firebase solo si tiene más datos que local
-                        const fbSessions = fbData.workoutHistory?.length || 0;
-                        const localSessions = state.workoutHistory?.length || 0;
-                        if (fbSessions > localSessions) {
-                            state = fbData;
-                            localStorage.setItem('FITTRACK_ALPHA_V2_STATE', JSON.stringify(state));
-                            // Actualizar UI con datos de Firebase
-                            applyTheme();
-                            renderDashboard();
-                            renderHistory();
-                            renderMeasurements();
-                            showToast('<i data-lucide="cloud" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> Datos sincronizados desde Firebase');
-                        }
-                    }
                 } catch(e) {
                     console.warn('No se pudo cargar Firebase:', e.message);
                 }
@@ -5308,6 +5330,22 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
         }
 
         // ═══ EXPORTAR RUTINA ═══
+        // Helper: convierte <i data-lucide="..."> en emojis Unicode para share/clipboard
+        // (WhatsApp/Telegram/mensajes no renderizan HTML, pero SÍ emojis nativos)
+        function _lucideToEmoji(html) {
+            const map = {
+                'bot': '🤖', 'calendar': '📅', 'flame': '🔥', 'dumbbell': '💪',
+                'snowflake': '❄️', 'message-circle': '💬', 'smartphone': '📱',
+                'target': '🎯', 'check-circle-2': '✅', 'x-circle': '❌',
+                'trophy': '🏆', 'bar-chart-3': '📊', 'trending-up': '📈',
+                'zap': '⚡', 'moon': '🌙', 'heart': '❤️', 'bell': '🔔',
+                'clock': '⏰', 'loader': '⏳', 'warning': '⚠️'
+            };
+            return html.replace(/<i\s+data-lucide="([^"]+)"[^>]*><\/i>/g, function(_, name){
+                return map[name] || '•';
+            });
+        }
+
         function exportarRutina() {
             const rutina  = state.fitbot?.rutinaRecomendada;
             const modeData = MODE_PARAMETERS[state.activeMode] || MODE_PARAMETERS['hipertrofia'];
@@ -5316,19 +5354,19 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
 
             if (rutina?.ejerciciosCompletos?.length) {
                 // Rutina del FitBot
-                texto += `<i data-lucide="bot" class="lc-ico"></i> FitTrack — ${rutina.tipoRutina}\n`;
-                texto += `<i data-lucide="calendar" class="lc-ico"></i> ${fecha} · ${modeData.name}\n`;
+                texto += `🤖 FitTrack — ${rutina.tipoRutina}\n`;
+                texto += `📅 ${fecha} · ${modeData.name}\n`;
                 texto += `─────────────────────\n\n`;
 
                 if (rutina.calentamiento?.length) {
-                    texto += `<i data-lucide="flame" class="lc-ico"></i> Calentamiento\n`;
+                    texto += `🔥 Calentamiento\n`;
                     rutina.calentamiento.forEach(e => {
                         texto += `• ${e['Ejercicio']} — ${e['Duración'] || e['Reps'] || '5 min'}\n`;
                     });
                     texto += `\n`;
                 }
 
-                texto += `<i data-lucide="dumbbell" class="lc-ico"></i> Ejercicios Principales\n`;
+                texto += `💪 Ejercicios Principales\n`;
                 rutina.ejerciciosCompletos.forEach((e, i) => {
                     const nombre  = e['Ejercicio'] || e.name;
                     const series  = e['Series'] || modeData.sets;
@@ -5338,13 +5376,13 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 });
 
                 if (rutina.enfriamiento?.length) {
-                    texto += `\n<i data-lucide="snowflake" class="lc-ico"></i> Enfriamiento\n`;
+                    texto += `\n❄️ Enfriamiento\n`;
                     rutina.enfriamiento.forEach(e => {
                         texto += `• ${e['Ejercicio']} — ${e['Duración'] || e['Reps'] || '5 min'}\n`;
                     });
                 }
 
-                if (rutina.nota) texto += `\n<i data-lucide="message-circle" class="lc-ico"></i> ${rutina.nota}\n`;
+                if (rutina.nota) texto += `\n💬 ${rutina.nota}\n`;
 
             } else {
                 // Rutina automática del día
@@ -5352,10 +5390,10 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 const exercisesToday = [...DEFAULT_EXERCISES, ...state.customExercises].filter(ex =>
                     split.target.includes(ex.category)
                 );
-                texto += `<i data-lucide="dumbbell" class="lc-ico"></i> FitTrack — ${split.name}\n`;
-                texto += `<i data-lucide="calendar" class="lc-ico"></i> ${fecha} · ${modeData.name}\n`;
+                texto += `💪 FitTrack — ${split.name}\n`;
+                texto += `📅 ${fecha} · ${modeData.name}\n`;
                 texto += `─────────────────────\n\n`;
-                texto += `<i data-lucide="dumbbell" class="lc-ico"></i> Ejercicios\n`;
+                texto += `💪 Ejercicios\n`;
                 exercisesToday.forEach((ex, i) => {
                     const record = state.prs[ex.id];
                     const peso = record ? ` · ${record.weight}kg PR` : '';
@@ -5364,7 +5402,10 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             }
 
             texto += `\n─────────────────────\n`;
-            texto += `<i data-lucide="smartphone" class="lc-ico"></i> Generado con FitTrack Alpha`;
+            texto += `📱 Generado con FitTrack Alpha`;
+
+            // Doble safety: limpiar cualquier <i data-lucide> que haya quedado
+            texto = _lucideToEmoji(texto);
 
             // Intentar Web Share API (nativa en móvil)
             if (navigator.share) {
