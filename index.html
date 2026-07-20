@@ -6783,6 +6783,12 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             state.fitbot.rutinaActivaEnPantalla = true;
             state.fitbot.rutinaRecomendada = rutina;
             state.fitbot.rutinaFecha = new Date().toISOString().split('T')[0];
+            // Persistir YA en la clave dedicada: si la app se cierra de golpe,
+            // la rutina sigue ahí sin depender de que el usuario pulse "guardar".
+            try {
+                localStorage.setItem('FITTRACK_RUTINA_HOY', JSON.stringify(rutina));
+                localStorage.setItem('FITTRACK_RUTINA_FECHA', state.fitbot.rutinaFecha);
+            } catch (e) { console.warn('[FitTrack] No se pudo persistir rutina:', e); }
             saveState();
 
             const modeData = MODE_PARAMETERS[state.activeMode] || MODE_PARAMETERS['hipertrofia'];
@@ -7354,48 +7360,46 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             // En Android WebView (Capacitor), localStorage puede perderse si la app
             // se cierra abruptamente. Forzamos guardado en múltiples eventos.
             
+            // ── Helper único de persistencia (state + rutina de hoy) ──
+            // OJO: antes el callback de Capacitor recibía un parámetro llamado
+            // "state", que TAPABA la variable global "state" de la app. Por eso
+            // la rutina NUNCA se guardaba al cerrar. Ahora usamos window.state
+            // explícitamente y el parámetro se llama appState.
+            function persistirTodo(origen) {
+                try {
+                    if (typeof saveState === 'function') saveState();
+                    var st = window.state;
+                    if (st && st.fitbot && st.fitbot.rutinaRecomendada) {
+                        localStorage.setItem('FITTRACK_RUTINA_HOY', JSON.stringify(st.fitbot.rutinaRecomendada));
+                        localStorage.setItem('FITTRACK_RUTINA_FECHA', st.fitbot.rutinaFecha || new Date().toISOString().split('T')[0]);
+                    }
+                    if (st && st.perfil) {
+                        localStorage.setItem('FITTRACK_PERFIL_COMPLETO', JSON.stringify(st.perfil));
+                    }
+                    console.log('[FitTrack] Persistido (' + origen + ') · rutina:', !!(st && st.fitbot && st.fitbot.rutinaRecomendada));
+                } catch (e) {
+                    console.warn('[FitTrack] Error persistiendo (' + origen + '):', e);
+                }
+            }
+            window.persistirTodo = persistirTodo;
+
             // 1. Cuando la app pasa a background (usuario cierra o cambia app)
             if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.App) {
-                Capacitor.Plugins.App.addListener('appStateChange', function(state) {
-                    if (!state.isActive) {
-                        // App va a background → guardar todo YA
-                        if (typeof saveState === 'function') {
-                            saveState();
-                            console.log('[FitTrack] State guardado (appStateChange → background)');
-                        }
-                        // Guardar rutina de hoy si existe
-                        if (typeof state !== 'undefined' && state.fitbot && state.fitbot.rutinaRecomendada) {
-                            localStorage.setItem('FITTRACK_RUTINA_HOY', JSON.stringify(state.fitbot.rutinaRecomendada));
-                            localStorage.setItem('FITTRACK_RUTINA_FECHA', state.fitbot.rutinaFecha || new Date().toISOString().split('T')[0]);
-                        }
-                    }
+                Capacitor.Plugins.App.addListener('appStateChange', function(appState) {
+                    if (!appState.isActive) persistirTodo('appStateChange');
                 });
             }
-            
+
             // 2. Cuando se oculta la página (evento web estándar)
             document.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'hidden') {
-                    if (typeof saveState === 'function') {
-                        saveState();
-                        console.log('[FitTrack] State guardado (visibilitychange → hidden)');
-                    }
-                }
+                if (document.visibilityState === 'hidden') persistirTodo('visibilitychange');
             });
-            
+
             // 3. Antes de descargar la página
-            window.addEventListener('pagehide', function() {
-                if (typeof saveState === 'function') {
-                    saveState();
-                    console.log('[FitTrack] State guardado (pagehide)');
-                }
-            });
-            
+            window.addEventListener('pagehide', function() { persistirTodo('pagehide'); });
+
             // 4. Guardado periódico cada 30 segundos (por las dudas)
-            setInterval(function() {
-                if (typeof saveState === 'function') {
-                    saveState();
-                }
-            }, 30000);
+            setInterval(function() { persistirTodo('interval'); }, 30000);
         });
     </script>
     <!-- ══ BOTÓN FLOTANTE FITBOT IA ══ -->
@@ -8091,8 +8095,8 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             headers:{'Content-Type':'application/json','x-api-key':getFitBotKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
             body:JSON.stringify({
                 model:'claude-haiku-4-5',
-                max_tokens:2500,
-                system:'Convierte la rutina de entrenamiento en JSON. Responde SOLO con JSON válido, sin texto extra, sin markdown. Incluye TODAS las secciones que aparezcan en la rutina (calentamiento, ejercicios principales/auxiliares y enfriamiento/estiramientos). Si una sección no existe en el texto, devuélvela como array vacío. Para CADA ejercicio incluye una explicación breve de la técnica correcta (campo Tecnica, 1-2 frases), el error más común (campo Errores) y un tip (campo Tips). Formato exacto: {"tipoRutina":"Nombre","calentamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Calentamiento","Series":"1","Reps":"5 min","Descanso":"30s","Tecnica":"...","Errores":"...","Tips":"..."}],"ejerciciosCompletos":[{"Ejercicio":"Nombre","Grupo Muscular":"Grupo","Series":"3","Reps":"8-12","Descanso":"60s","Tecnica":"...","Errores":"...","Tips":"..."}],"enfriamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Enfriamiento","Series":"1","Reps":"30s","Descanso":"20s","Tecnica":"...","Errores":"...","Tips":"..."}]}',
+                max_tokens:8000,
+                system:'Convierte la rutina de entrenamiento en JSON. Responde SOLO con JSON válido, sin texto extra, sin markdown. Incluye TODAS las secciones que aparezcan en la rutina (calentamiento, ejercicios principales/auxiliares y enfriamiento/estiramientos). Si una sección no existe en el texto, devuélvela como array vacío. Para CADA ejercicio incluye el campo Tecnica con UNA sola frase corta (máximo 15 palabras). NO incluyas campos Errores ni Tips. Sé breve para que el JSON quede completo. Formato exacto: {"tipoRutina":"Nombre","calentamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Calentamiento","Series":"1","Reps":"5 min","Descanso":"30s","Tecnica":"..."}],"ejerciciosCompletos":[{"Ejercicio":"Nombre","Grupo Muscular":"Grupo","Series":"3","Reps":"8-12","Descanso":"60s","Tecnica":"..."}],"enfriamiento":[{"Ejercicio":"Nombre","Grupo Muscular":"Enfriamiento","Series":"1","Reps":"30s","Descanso":"20s","Tecnica":"..."}]}',
                 messages:[{role:'user', content:'Convierte esta rutina a JSON: ' + texto.substring(0, 5000)}]
             })
         })
@@ -8110,13 +8114,42 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             jsonStr = jsonStr.replace(/```json/g,'').replace(/```/g,'').trim();
 
             var rutina = null;
-            try{ rutina = JSON.parse(jsonStr); } catch(e){
+            // Intento 1: parseo directo
+            try{ rutina = JSON.parse(jsonStr); } catch(e){}
+            // Intento 2: extraer el objeto más grande
+            if(!rutina){
                 var m = jsonStr.match(/\{[\s\S]*\}/);
                 if(m){ try{ rutina = JSON.parse(m[0]); }catch(e2){} }
             }
+            // Intento 3: REPARAR JSON truncado (respuesta cortada a mitad).
+            // Recortamos hasta el último objeto de ejercicio completo y cerramos
+            // los corchetes/llaves que falten para poder rescatar la rutina.
+            if(!rutina && jsonStr.indexOf('"ejerciciosCompletos"') !== -1){
+                try{
+                    var corte = jsonStr.lastIndexOf('}');
+                    if(corte > 0){
+                        var parcial = jsonStr.substring(0, corte + 1);
+                        // Contar llaves/corchetes abiertos sin cerrar
+                        var abrLlave = (parcial.match(/\{/g)||[]).length;
+                        var cerLlave = (parcial.match(/\}/g)||[]).length;
+                        var abrCorch = (parcial.match(/\[/g)||[]).length;
+                        var cerCorch = (parcial.match(/\]/g)||[]).length;
+                        var i;
+                        for(i=0; i<(abrCorch-cerCorch); i++) parcial += ']';
+                        for(i=0; i<(abrLlave-cerLlave); i++) parcial += '}';
+                        rutina = JSON.parse(parcial);
+                        console.log('[FitTrack] JSON truncado reparado');
+                    }
+                }catch(e3){ console.warn('[FitTrack] No se pudo reparar el JSON:', e3); }
+            }
 
             if(!rutina || !rutina.ejerciciosCompletos || !rutina.ejerciciosCompletos.length){
-                if(btn){ btn.innerHTML='<i data-lucide="x-circle" class="lc-ico"></i> Error al convertir'; btn.style.color='#f87171'; }
+                console.warn('[FitTrack] JSON recibido (primeros 400):', jsonStr.substring(0,400));
+                var motivo = 'Error al convertir';
+                if(!jsonStr){ motivo = 'La IA no respondió'; }
+                else if(data.stop_reason === 'max_tokens'){ motivo = 'Rutina muy larga, pide una más corta'; }
+                else if(rutina && !rutina.ejerciciosCompletos){ motivo = 'La IA no listó ejercicios'; }
+                if(btn){ btn.innerHTML='<i data-lucide="x-circle" class="lc-ico"></i> ' + motivo; btn.style.color='#f87171'; btn.disabled=false; }
                 return;
             }
 
