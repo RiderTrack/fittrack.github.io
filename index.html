@@ -1800,7 +1800,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             <div class="studio-title"><i data-lucide="target" class="lc-ico"></i> Mi perfil de entrenamiento</div>
             <p style="font-size:0.75rem;color:rgb(var(--text-muted-rgb));margin:8px 0 10px;">Objetivo, nivel, días por semana y equipo. Ajusta cómo se arman tus rutinas.</p>
             <button onclick="abrirOnboarding()"
-                style="width:100%;background:rgba(var(--border-rgb),0.15);color:rgb(var(--text-rgb));border:1px solid rgba(var(--border-rgb),0.25);border-radius:10px;padding:10px;font-size:0.8rem;font-weight:700;cursor:pointer;"><i data-lucide="pencil" class="lc-ico"></i> Editar mi perfil</button>
+                style="width:100%;background:linear-gradient(135deg,rgba(var(--primary-rgb),0.2),rgba(var(--secondary-rgb),0.2));color:rgb(var(--text-rgb));border:1px solid rgba(var(--primary-rgb),0.4);border-radius:10px;padding:12px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                <i data-lucide="pencil" class="lc-ico"></i> Configurar mi perfil
+            </button>
+            <div id="perfil-status-bar" style="margin-top:10px;font-size:0.72rem;color:rgb(var(--text-muted-rgb));text-align:center;"></div>
         </div>
 
         <!-- Ajustes de cuenta -->
@@ -3012,6 +3015,23 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 try { state = JSON.parse(savedLocal); } catch(e) {}
             }
 
+            // === RESTAURAR RUTINA DE HOY si se perdió (clave dedicada) ===
+            const rutinaHoyLS = localStorage.getItem('FITTRACK_RUTINA_HOY');
+            if (rutinaHoyLS && (!state.fitbot || !state.fitbot.rutinaRecomendada)) {
+                try {
+                    const rutinaGuardada = JSON.parse(rutinaHoyLS);
+                    if (rutinaGuardada && rutinaGuardada.ejerciciosCompletos) {
+                        if (!state.fitbot) state.fitbot = {};
+                        state.fitbot.rutinaRecomendada = rutinaGuardada;
+                        state.fitbot.rutinaActivaEnPantalla = true;
+                        state.fitbot.rutinaFecha = localStorage.getItem('FITTRACK_RUTINA_FECHA') || new Date().toISOString().split('T')[0];
+                        console.log('[FitTrack] Rutina de hoy restaurada desde FITTRACK_RUTINA_HOY');
+                    }
+                } catch(e) {
+                    console.warn('[FitTrack] Error parseando FITTRACK_RUTINA_HOY:', e);
+                }
+            }
+
             // Mostrar app con datos locales
             applyTheme();
             updateClock();
@@ -3022,17 +3042,28 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             renderMeasurements();
             initFitBot();
 
+            // === RENDERIZAR RUTINA DE HOY si estaba activa ===
+            if (state.fitbot && state.fitbot.rutinaRecomendada && state.fitbot.rutinaActivaEnPantalla && typeof cargarRutinaFitBot === 'function') {
+                setTimeout(function() {
+                    try {
+                        cargarRutinaFitBot(state.fitbot.rutinaRecomendada);
+                        console.log('[FitTrack] Rutina de hoy re-renderizada al iniciar');
+                    } catch(e) {
+                        console.warn('[FitTrack] Error re-renderizando rutina:', e);
+                    }
+                }, 800);
+            }
+
             // NIVEL 3: UI del recordatorio + otorgar logros retroactivos sin spam de toasts
             initRecordatorioUI();
             verificarLogros(true);
 
-            // ONBOARDING: primera vez sin perfil → wizard de bienvenida
-            // === FIX DEFINITIVO: usar clave separada FITTRACK_PERFIL_COMPLETO ===
-            // Esta clave persiste aunque Firebase sobreescriba el state local.
-            var onbInicialOk = localStorage.getItem('FITTRACK_ONBOARDING_OK');
+            // ONBOARDING DE PERFIL: ya NO es obligatorio al inicio.
+            // El usuario puede completarlo cuando quiera desde Ajustes.
+            // Si ya tiene perfil guardado (local o FITTRACK_PERFIL_COMPLETO), se restaura silenciosamente.
             var perfilCompleto = localStorage.getItem('FITTRACK_PERFIL_COMPLETO');
             
-            // Si la clave existe pero state.perfil no (Firebase lo borró), restaurar
+            // Si la clave existe pero state.perfil no, restaurar
             if (perfilCompleto && !state.perfil) {
                 try {
                     state.perfil = JSON.parse(perfilCompleto);
@@ -3041,10 +3072,9 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                     console.warn('[FitTrack] Error parseando FITTRACK_PERFIL_COMPLETO:', e);
                 }
             }
-            
-            // Solo abrir el wizard si NO hay perfil Y NO se completó antes
-            if (!state.perfil && onbInicialOk && !perfilCompleto) {
-                setTimeout(abrirOnboarding, 600);
+            // Si tiene perfil, aplicar modo activo del perfil
+            if (state.perfil && state.perfil.objetivo && typeof MODE_PARAMETERS !== 'undefined' && MODE_PARAMETERS[state.perfil.objetivo]) {
+                state.activeMode = state.perfil.objetivo;
             }
 
             // 2. Intentar cargar desde Firebase en segundo plano
@@ -6899,6 +6929,21 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 (enf.length  * 2);
             initSessionProgress(totalSeries);
 
+            // Botón FINALIZAR Y GUARDAR ENTRENAMIENTO (alta prioridad visual)
+            const btnFinalizar = document.createElement('button');
+            btnFinalizar.id = 'btn-finalizar-entrenamiento';
+            btnFinalizar.style.cssText = 'width:100%;margin-top:16px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:var(--border-radius);padding:14px;font-size:0.9rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(34,197,94,0.3);';
+            btnFinalizar.innerHTML='<i data-lucide="check-circle-2" class="lc-ico"></i> FINALIZAR Y GUARDAR ENTRENAMIENTO';
+            btnFinalizar.onclick = function() { finalizarYGuardarEntrenamiento(); };
+            container.appendChild(btnFinalizar);
+
+            // Botón GUARDAR RUTINA DE HOY (persistir aunque no entrene todavía)
+            const btnGuardarHoy = document.createElement('button');
+            btnGuardarHoy.style.cssText = 'width:100%;margin-top:10px;background:linear-gradient(135deg,rgba(var(--primary-rgb),0.25),rgba(var(--secondary-rgb),0.25));color:rgb(var(--text-rgb));border:1px solid rgba(var(--primary-rgb),0.5);border-radius:var(--border-radius);padding:12px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;';
+            btnGuardarHoy.innerHTML='<i data-lucide="save" class="lc-ico"></i> Guardar rutina de hoy (sin entrenar)';
+            btnGuardarHoy.onclick = function() { guardarRutinaHoySinEntrenar(); };
+            container.appendChild(btnGuardarHoy);
+
             // Botón volver a rutina automática
             const btnLimpiar = document.createElement('button');
             btnLimpiar.style.cssText = 'width:100%;margin-top:16px;background:rgba(var(--text-rgb),0.06);border:1px solid rgba(var(--border-rgb),0.15);color:rgb(var(--text-muted-rgb));border-radius:var(--border-radius);padding:12px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;';
@@ -6910,6 +6955,161 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
                 generateTodayRoutine();
             };
             container.appendChild(btnLimpiar);
+        }
+
+        // ═══ GUARDAR RUTINA DE HOY (sin entrenar todavía) ═══
+        // Periste la rutina en state + localStorage + Firebase para que
+        // sobreviva al cierre del APK. NO la agrega al historial.
+        function guardarRutinaHoySinEntrenar() {
+            const rutina = state.fitbot && state.fitbot.rutinaRecomendada;
+            if (!rutina || !rutina.ejerciciosCompletos || !rutina.ejerciciosCompletos.length) {
+                showToast('<i data-lucide="triangle-alert" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> No hay rutina para guardar');
+                return;
+            }
+            // Marcar como activa y guardar fecha
+            if (!state.fitbot) state.fitbot = {};
+            state.fitbot.rutinaActivaEnPantalla = true;
+            state.fitbot.rutinaRecomendada = rutina;
+            state.fitbot.rutinaFecha = new Date().toISOString().split('T')[0];
+            // Guardar en localStorage con clave DEDICADA (sobrevive a sobrescrituras)
+            localStorage.setItem('FITTRACK_RUTINA_HOY', JSON.stringify(rutina));
+            localStorage.setItem('FITTRACK_RUTINA_FECHA', state.fitbot.rutinaFecha);
+            saveState();  // guarda en FITTRACK_ALPHA_V2_STATE + Firebase
+            showToast('<i data-lucide="save" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> Rutina guardada. Quedará aunque cierres la app.');
+            console.log('[FitTrack] Rutina de hoy guardada explícitamente');
+        }
+
+        // ═══ FINALIZAR Y GUARDAR ENTRENAMIENTO ═══
+        // Agrega la rutina actual al historial con volumen calculado,
+        // actualiza racha, PRs, y persiste TODO.
+        function finalizarYGuardarEntrenamiento() {
+            const rutina = state.fitbot && state.fitbot.rutinaRecomendada;
+            if (!rutina || !rutina.ejerciciosCompletos || !rutina.ejerciciosCompletos.length) {
+                showToast('<i data-lucide="triangle-alert" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> No hay rutina para guardar');
+                return;
+            }
+
+            // Calcular volumen total basado en los sets completados
+            let volumenTotal = 0;
+            let seriesCompletadas = 0;
+            rutina.ejerciciosCompletos.forEach((ex, idx) => {
+                const exId = `p-${idx}`;
+                const series = parseInt(ex['Series']) || 0;
+                for (let s = 1; s <= series; s++) {
+                    const wEl = document.getElementById('weight-' + exId + '-' + s);
+                    const rEl = document.getElementById('reps-' + exId + '-' + s);
+                    if (wEl && rEl) {
+                        const w = parseFloat(wEl.value) || 0;
+                        const r = parseInt(rEl.value) || 0;
+                        if (w > 0 && r > 0) {
+                            volumenTotal += w * r;
+                            seriesCompletadas++;
+                        }
+                    }
+                }
+            });
+
+            // Si no completó ningún set, usar valores sugeridos
+            if (volumenTotal === 0) {
+                rutina.ejerciciosCompletos.forEach((ex, idx) => {
+                    const exId = 'p-' + idx;
+                    const series = parseInt(ex['Series']) || 4;
+                    const modeData = (typeof MODE_PARAMETERS !== 'undefined' && MODE_PARAMETERS[state.activeMode]) || { sets: 4, reps: '10' };
+                    const wEl = document.getElementById('weight-' + exId + '-1');
+                    const pesoSugerido = wEl ? parseFloat(wEl.value) || 40 : 40;
+                    const repsNum = parseInt(modeData.reps) || 10;
+                    volumenTotal += pesoSugerido * repsNum * series;
+                });
+                showToast('<i data-lucide="info" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> Sesión guardada con valores sugeridos');
+            }
+
+            // Crear entrada de historial
+            const hoy = new Date();
+            const fechaStr = hoy.toISOString().split('T')[0];
+            const session = {
+                date: fechaStr,
+                routineName: rutina.tipoRutina || 'Entrenamiento FitBot',
+                mode: state.activeMode || 'hipertrofia',
+                exercises: rutina.ejerciciosCompletos.map((e, i) => ({
+                    name: e['Ejercicio'] || e.name || ('Ejercicio ' + (i+1)),
+                    sets: parseInt(e['Series']) || 4,
+                    reps: e['Reps'] || '10',
+                    weight: 0
+                })),
+                volume: Math.round(volumenTotal),
+                duration: 0,
+                completed: true,
+                timestamp: hoy.toISOString()
+            };
+
+            // Agregar al historial
+            if (!state.workoutHistory) state.workoutHistory = [];
+            state.workoutHistory.unshift(session);
+
+            // Actualizar racha
+            const ultimaFecha = state.lastWorkoutDate;
+            const hoyStr = fechaStr;
+            if (ultimaFecha !== hoyStr) {
+                // Calcular si es día consecutivo
+                const ayer = new Date(hoy - 86400000).toISOString().split('T')[0];
+                if (ultimaFecha === ayer) {
+                    state.streak = (state.streak || 0) + 1;
+                } else if (ultimaFecha !== hoyStr) {
+                    state.streak = 1;
+                }
+                state.lastWorkoutDate = hoyStr;
+                state.lastWorkoutName = session.routineName;
+            }
+
+            // Actualizar PRs por ejercicio
+            rutina.ejerciciosCompletos.forEach((ex, idx) => {
+                const exId = 'p-' + idx;
+                const nombre = ex['Ejercicio'] || ex.name;
+                if (!nombre) return;
+                const series = parseInt(ex['Series']) || 4;
+                let maxWeight = 0, maxReps = 0;
+                for (let s = 1; s <= series; s++) {
+                    const wEl = document.getElementById('weight-' + exId + '-' + s);
+                    const rEl = document.getElementById('reps-' + exId + '-' + s);
+                    if (wEl && rEl) {
+                        const w = parseFloat(wEl.value) || 0;
+                        const r = parseInt(rEl.value) || 0;
+                        if (w > maxWeight) { maxWeight = w; maxReps = r; }
+                    }
+                }
+                if (maxWeight > 0) {
+                    const prKey = nombre.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    const prActual = state.prs[prKey];
+                    if (!prActual || maxWeight > prActual.weight) {
+                        state.prs[prKey] = { weight: maxWeight, reps: maxReps, date: hoyStr };
+                    }
+                }
+            });
+
+            // Limpiar rutina activa pero mantener en historial
+            state.fitbot.rutinaActivaEnPantalla = false;
+            // NO borrar rutinaRecomendada para que pueda reabrirse si quiere
+
+            // === GUARDAR EN MÚLTIPLES SITIOS para máxima persistencia ===
+            localStorage.setItem('FITTRACK_ALPHA_V2_STATE', JSON.stringify(state));
+            localStorage.setItem('FITTRACK_ULTIMA_SESION', JSON.stringify(session));
+            localStorage.setItem('FITTRACK_ULTIMA_FECHA', hoyStr);
+            saveState();  // guarda en Firebase también
+
+            // Re-renderizar
+            renderDashboard();
+            renderHistory();
+            if (typeof verificarLogros === 'function') verificarLogros(false);
+
+            // Notificación celebratoria
+            showToast('<i data-lucide="trophy" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> ¡Entrenamiento guardado! ' + Math.round(volumenTotal).toLocaleString() + ' kg · Racha ' + state.streak + ' días');
+
+            // Vibración celebratoria
+            if (typeof triggerVibration === 'function') {
+                triggerVibration([100, 50, 100, 50, 200]);
+            }
+
+            console.log('[FitTrack] Entrenamiento finalizado y guardado. Volumen:', volumenTotal, 'Racha:', state.streak);
         }
 
         // ═══ GENERAR RUTINA DE REHABILITACIÓN ═══
@@ -7149,6 +7349,53 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
 
         window.addEventListener('DOMContentLoaded', () => {
             loadState();
+            
+            // === PERSISTENCIA AGRESIVA AL CERRAR LA APP ===
+            // En Android WebView (Capacitor), localStorage puede perderse si la app
+            // se cierra abruptamente. Forzamos guardado en múltiples eventos.
+            
+            // 1. Cuando la app pasa a background (usuario cierra o cambia app)
+            if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.App) {
+                Capacitor.Plugins.App.addListener('appStateChange', function(state) {
+                    if (!state.isActive) {
+                        // App va a background → guardar todo YA
+                        if (typeof saveState === 'function') {
+                            saveState();
+                            console.log('[FitTrack] State guardado (appStateChange → background)');
+                        }
+                        // Guardar rutina de hoy si existe
+                        if (typeof state !== 'undefined' && state.fitbot && state.fitbot.rutinaRecomendada) {
+                            localStorage.setItem('FITTRACK_RUTINA_HOY', JSON.stringify(state.fitbot.rutinaRecomendada));
+                            localStorage.setItem('FITTRACK_RUTINA_FECHA', state.fitbot.rutinaFecha || new Date().toISOString().split('T')[0]);
+                        }
+                    }
+                });
+            }
+            
+            // 2. Cuando se oculta la página (evento web estándar)
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') {
+                    if (typeof saveState === 'function') {
+                        saveState();
+                        console.log('[FitTrack] State guardado (visibilitychange → hidden)');
+                    }
+                }
+            });
+            
+            // 3. Antes de descargar la página
+            window.addEventListener('pagehide', function() {
+                if (typeof saveState === 'function') {
+                    saveState();
+                    console.log('[FitTrack] State guardado (pagehide)');
+                }
+            });
+            
+            // 4. Guardado periódico cada 30 segundos (por las dudas)
+            setInterval(function() {
+                if (typeof saveState === 'function') {
+                    saveState();
+                }
+            }, 30000);
         });
     </script>
     <!-- ══ BOTÓN FLOTANTE FITBOT IA ══ -->
@@ -7948,9 +8195,21 @@ const FB_EJERCICIOS_DB = [{"ID": 129, "Ejercicio": "Curl Barra Z", "Grupo Muscul
             '¿Borrar TODOS los datos locales?',
             function(){
                 // Borrar todo lo de FitTrack
-                var keys = ['FITTRACK_ALPHA_V2_STATE','FITTRACK_ONBOARDING_OK','FITTRACK_PERFIL_COMPLETO',
-                           'FITTRACK_NOMBRE','FITTRACK_ANTHROPIC_KEY','FITTRACK_USER_ID',
-                           'FITTRACK_USER_NAME','FITTRACK_USER_EMAIL','FITTRACK_USER_PHOTO'];
+                var keys = [
+                    'FITTRACK_ALPHA_V2_STATE',
+                    'FITTRACK_ONBOARDING_OK',
+                    'FITTRACK_PERFIL_COMPLETO',
+                    'FITTRACK_RUTINA_HOY',
+                    'FITTRACK_RUTINA_FECHA',
+                    'FITTRACK_ULTIMA_SESION',
+                    'FITTRACK_ULTIMA_FECHA',
+                    'FITTRACK_NOMBRE',
+                    'FITTRACK_ANTHROPIC_KEY',
+                    'FITTRACK_USER_ID',
+                    'FITTRACK_USER_NAME',
+                    'FITTRACK_USER_EMAIL',
+                    'FITTRACK_USER_PHOTO'
+                ];
                 keys.forEach(function(k){ localStorage.removeItem(k); });
                 console.log('[FitTrack] localStorage borrado completamente. Recargando...');
                 showToast('<i data-lucide="check-circle-2" class="lc-ico" style="width:1.1em;height:1.1em;vertical-align:-0.15em;display:inline-block;"></i> Datos borrados. Reiniciando...');
